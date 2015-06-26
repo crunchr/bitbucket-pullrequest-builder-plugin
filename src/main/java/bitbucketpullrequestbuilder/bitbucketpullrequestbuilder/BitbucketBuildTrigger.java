@@ -30,7 +30,7 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String ciSkipPhrases;
     private final boolean checkDestinationCommit;
     private final boolean approveIfSuccess;
-    
+
     transient private BitbucketPullRequestsBuilder bitbucketPullRequestsBuilder;
 
     @Extension
@@ -87,7 +87,7 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public String getCiSkipPhrases() {
         return ciSkipPhrases;
     }
-    
+
     public boolean getCheckDestinationCommit() {
     	return checkDestinationCommit;
     }

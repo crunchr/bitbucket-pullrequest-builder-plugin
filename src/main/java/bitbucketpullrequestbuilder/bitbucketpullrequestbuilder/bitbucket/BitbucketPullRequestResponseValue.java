@@ -19,6 +19,8 @@ public class BitbucketPullRequestResponseValue {
     private String createdOn;
     private String updatedOn;
     private String mergeCommit;
+    private BitbucketPullRequestReponseValueUser author;
+    private BitbucketPullRequestReponseValueParticipant[] participants;
     private String id;
 
     public String getDescription() {
@@ -117,6 +119,22 @@ public class BitbucketPullRequestResponseValue {
     @JsonProperty("merge_commit")
     public void setMergeCommit(String mergeCommit) {
         this.mergeCommit = mergeCommit;
+    }
+
+    public BitbucketPullRequestReponseValueUser[] getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(BitbucketPullRequestReponseValueUser[] author) {
+      this.author = author;
+    }
+
+    public BitbucketPullRequestReponseValueParticipant[] getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(BitbucketPullRequestReponseValueParticipant[] participants) {
+      this.participants = participants;
     }
 
     public String getId() {

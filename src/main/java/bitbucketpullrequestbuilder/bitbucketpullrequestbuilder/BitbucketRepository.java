@@ -49,7 +49,7 @@ public class BitbucketRepository {
     }
 
     public Collection<BitbucketPullRequestResponseValue> getTargetPullRequests() {
-        logger.info("Fetch PullRequests.");
+        logger.info("Fetch PullRequests. :D");
         List<BitbucketPullRequestResponseValue> pullRequests = client.getPullRequests();
         List<BitbucketPullRequestResponseValue> targetPullRequests = new ArrayList<BitbucketPullRequestResponseValue>();
         for(BitbucketPullRequestResponseValue pullRequest : pullRequests) {
@@ -113,9 +113,16 @@ public class BitbucketRepository {
     }
 
     private boolean isBuildTarget(BitbucketPullRequestResponseValue pullRequest) {
+        logger.info("isBuildTarget");
+        logger.info("PULL REQUEST" + pullRequest.toString());
 
         boolean shouldBuild = true;
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
+            logger.info("Trigger conditions test!!!!");
+            if (!triggerConditionsSatisfied(pullRequest)) {
+                return false;
+            }
+
             if (isSkipBuild(pullRequest.getTitle())) {
                 return false;
             }
@@ -180,6 +187,89 @@ public class BitbucketRepository {
             }
         }
         return shouldBuild;
+    }
+
+    private boolean triggerConditionsSatisfied(BitbucketPullRequestValue pullRequest) {
+        logger.info(pullRequest.toString());
+        // Do we want trigger conditions?
+        if(true) {
+            if(true && !hasAuthorApproved(pullRequest)) {
+                return false;
+            }
+
+            if(true && !haveRequiredParticipantsApproved(pullRequest)) {
+                return false;
+            }
+
+            if(false && !hasEnoughApprovals(pullRequest)) {
+                return false;
+            }
+
+            if(false && !haveAllParticipantsApproved(pullRequest)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean hasAuthorApproved(BitbucketPullRequestValue pullRequest) {
+        logger.info(pullRequest.getAuthor());
+        logger.info(pullRequest.getAuthor().getApproved());
+        return pullRequest.getAuthor().getApproved();
+    }
+
+    private boolean haveRequiredParticipantsApproved(BitbucketPullRequestValue pullRequest) {
+        String[] requiredParticipants = {"Remco47"};
+
+        for(String requiredParticipant : requiredParticipants) {
+            boolean foundParticipant = false;
+            logger.info("Checking required participant: " + requiredParticipant);
+
+            for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
+              logger.info("Checking " + participant.getUser().getUsername());
+                if(participant.getUser().getUsername() == requiredParticipant) {
+                    foundParticipant = true;
+
+                    logger.info("Approved:" + participant.getApproved());
+                    if(!participant.getApproved()) {
+                        return false;
+                    }
+                }
+            }
+
+            if(!foundParticipant) {
+              logger.info("Did not find participant");
+              return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean hasEnoughApprovals(BitbucketPullRequestValue pullRequest) {
+        int neededApprovals = 3;
+        int numApprovals = 0;
+
+        for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
+            if(participant.getApproved()) {
+                numApprovals++;
+            }
+        }
+
+        return numApprovals >= neededApprovals;
+    }
+
+    private boolean haveAllParticipantsApproved(BitbucketPullRequestValue pullRequest) {
+      logger.info("Have all participants approveD??");
+        for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
+          logger.info("Cecking particpant: " + participant.getUser().getUsername() + " -> " + participant.getApproved());
+            if(!participant.getApproved()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean isSkipBuild(String pullRequestTitle) {
