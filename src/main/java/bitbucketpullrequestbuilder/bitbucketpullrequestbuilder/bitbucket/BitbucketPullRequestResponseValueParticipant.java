@@ -3,6 +3,8 @@ package bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket.BitbucketPullRequestResponseValueUser;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BitbucketPullRequestResponseValueParticipant {
     private String role;
