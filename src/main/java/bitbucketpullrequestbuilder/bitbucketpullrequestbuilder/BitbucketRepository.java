@@ -29,16 +29,18 @@ public class BitbucketRepository {
     public static final String BUILD_FINISH_SENTENCE = BUILD_FINISH_MARKER + " \n\n **%s** - %s";
     public static final String BUILD_REQUEST_MARKER = "test this please";
 
-    public static final String BUILD_SUCCESS_COMMENT =  "&#10004; SUCCESS";
-    public static final String BUILD_FAILURE_COMMENT = "&#10006; FAILURE";
+    public static final String BUILD_SUCCESS_COMMENT =  ":white_check_mark: SUCCESS";
+    public static final String BUILD_FAILURE_COMMENT = ":x: FAILURE";
     private String projectPath;
     private BitbucketPullRequestsBuilder builder;
     private BitbucketBuildTrigger trigger;
     private BitbucketApiClient client;
+    private List<String> approvedPullRequests;   // The ids of pull requests that have been approved (i.e. that met the trigger conditions)
 
     public BitbucketRepository(String projectPath, BitbucketPullRequestsBuilder builder) {
         this.projectPath = projectPath;
         this.builder = builder;
+        approvedPullRequests = new ArrayList<String>();
     }
 
     public void init() {
@@ -54,11 +56,27 @@ public class BitbucketRepository {
         logger.info("Fetch PullRequests.");
         List<BitbucketPullRequestResponseValue> pullRequests = client.getPullRequests();
         List<BitbucketPullRequestResponseValue> targetPullRequests = new ArrayList<BitbucketPullRequestResponseValue>();
+        List<String> activeApprovedPullRequests = new ArrayList<String>();
         for(BitbucketPullRequestResponseValue pullRequest : pullRequests) {
             if (isBuildTarget(pullRequest)) {
                 targetPullRequests.add(pullRequest);
             }
+
+            if(approvedPullRequests.contains(pullRequest.getId())) {
+                activeApprovedPullRequests.add(pullRequest.getId());
+            }
         }
+
+        String currentPullRequests = "";
+
+        for(String pr : approvedPullRequests) {
+            currentPullRequests += pr + ", ";
+        }
+
+        logger.info("Approved pull request changed to: " + currentPullRequests);
+
+        approvedPullRequests = activeApprovedPullRequests;
+
         return targetPullRequests;
     }
 
@@ -118,8 +136,9 @@ public class BitbucketRepository {
         boolean shouldBuild = true;
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
 
-            if (!triggerConditionsSatisfied(pullRequest)) {
-                return false;
+            // TODO: Check if trigger conditions are enabled
+            if (true && triggerConditionsSatisfied(pullRequest)) {
+                return true;
             }
 
             if (isSkipBuild(pullRequest.getTitle())) {
@@ -189,9 +208,8 @@ public class BitbucketRepository {
     }
 
     private boolean triggerConditionsSatisfied(BitbucketPullRequestResponseValue pullRequest) {
-
-        // Do we want trigger conditions?
-        if(true) {
+        // Only check if pull requests has not been aproved yet
+        if(!approvedPullRequests.contains(pullRequest.getId())) {
             if(true && !hasAuthorApproved(pullRequest)) {
                 logger.info("Author has not approved");
                 return false;
@@ -219,11 +237,21 @@ public class BitbucketRepository {
             } else {
                 logger.info("All participants have approved");
             }
+
+            // Make sure build is not triggered again
+            approvedPullRequests.add(pullRequest.getId());
+
+            String currentPullRequests = "";
+
+            for(String pr : approvedPullRequests) {
+                currentPullRequests += pr + ", ";
+            }
+
+            logger.info("Trigger conditions were satisfied! Approved pull requests: " + currentPullRequests);
+            return true;
         }
 
-        logger.info("Trigger conditions were satisfied!");
-
-        return true;
+        return false;
     }
 
     private boolean hasAuthorApproved(BitbucketPullRequestResponseValue pullRequest) {
