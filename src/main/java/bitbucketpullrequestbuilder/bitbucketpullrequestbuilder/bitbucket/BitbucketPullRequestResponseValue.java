@@ -19,8 +19,8 @@ public class BitbucketPullRequestResponseValue {
     private String createdOn;
     private String updatedOn;
     private String mergeCommit;
-    private BitbucketPullRequestReponseValueUser author;
-    private BitbucketPullRequestReponseValueParticipant[] participants;
+    private BitbucketPullRequestResponseValueUser author;
+    private BitbucketPullRequestResponseValueParticipant[] participants;
     private String id;
 
     public String getDescription() {
@@ -121,19 +121,19 @@ public class BitbucketPullRequestResponseValue {
         this.mergeCommit = mergeCommit;
     }
 
-    public BitbucketPullRequestReponseValueUser[] getAuthor() {
+    public BitbucketPullRequestResponseValueUser getAuthor() {
         return author;
     }
 
-    public void setAuthor(BitbucketPullRequestReponseValueUser[] author) {
+    public void setAuthor(BitbucketPullRequestResponseValueUser author) {
       this.author = author;
     }
 
-    public BitbucketPullRequestReponseValueParticipant[] getParticipants() {
+    public BitbucketPullRequestResponseValueParticipant[] getParticipants() {
         return participants;
     }
 
-    public void setParticipants(BitbucketPullRequestReponseValueParticipant[] participants) {
+    public void setParticipants(BitbucketPullRequestResponseValueParticipant[] participants) {
       this.participants = participants;
     }
 

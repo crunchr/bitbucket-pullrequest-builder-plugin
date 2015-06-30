@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,11 +40,30 @@ public class BitbucketApiClient {
     public List<BitbucketPullRequestResponseValue> getPullRequests() {
         String response = getRequest(V2_API_BASE_URL + this.owner + "/" + this.repositoryName + "/pullrequests/");
         try {
-            return parsePullRequestJson(response).getPrValues();
+            List<BitbucketPullRequestResponseValue> pullRequests = parsePullRequestJson(response).getPrValues();
+            List<BitbucketPullRequestResponseValue> detailedPullRequests = new ArrayList<BitbucketPullRequestResponseValue>();
+
+            for(BitbucketPullRequestResponseValue pullRequest : pullRequests) {
+                logger.info("Getting pull request info for #" + pullRequest.getId());
+                detailedPullRequests.add(getSinglePullRequest(pullRequest.getId()));
+            }
+
+            return detailedPullRequests;
         } catch(Exception e) {
             logger.log(Level.WARNING, "invalid pull request response.", e);
         }
         return Collections.EMPTY_LIST;
+    }
+
+    public BitbucketPullRequestResponseValue getSinglePullRequest(String pullRequestId) {
+        String response = getRequest(V2_API_BASE_URL + this.owner + "/" + this.repositoryName + "/pullrequests/" + pullRequestId + "/");
+        try {
+            return parseSinglePullRequestJson(response);
+        } catch(Exception e) {
+            logger.log(Level.WARNING, "invalid pull request response.", e);
+        }
+
+        return null;
     }
 
     public List<BitbucketPullRequestComment> getPullRequestComments(String commentOwnerName, String commentRepositoryName, String pullRequestId) {
@@ -62,7 +82,6 @@ public class BitbucketApiClient {
         //https://bitbucket.org/api/1.0/repositories/{accountname}/{repo_slug}/pullrequests/{pull_request_id}/comments/{comment_id}
         deleteRequest(path);
     }
-
 
     public BitbucketPullRequestComment postPullRequestComment(String pullRequestId, String comment) {
         String path = V1_API_BASE_URL + this.owner + "/" + this.repositoryName + "/pullrequests/" + pullRequestId + "/comments";
@@ -173,6 +192,13 @@ public class BitbucketApiClient {
         return parsedResponse;
     }
 
+    private BitbucketPullRequestResponseValue parseSinglePullRequestJson(String response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        BitbucketPullRequestResponseValue parsedResponse;
+        parsedResponse = mapper.readValue(response, BitbucketPullRequestResponseValue.class);
+        return parsedResponse;
+    }
+
     private List<BitbucketPullRequestComment> parseCommentJson(String response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         List<BitbucketPullRequestComment> parsedResponse;
@@ -201,4 +227,3 @@ public class BitbucketApiClient {
         return parsedResponse;
     }
 }
-

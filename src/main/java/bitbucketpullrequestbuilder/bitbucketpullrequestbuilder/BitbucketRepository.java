@@ -51,7 +51,7 @@ public class BitbucketRepository {
     }
 
     public Collection<BitbucketPullRequestResponseValue> getTargetPullRequests() {
-        logger.info("Fetch PullRequests. :D");
+        logger.info("Fetch PullRequests.");
         List<BitbucketPullRequestResponseValue> pullRequests = client.getPullRequests();
         List<BitbucketPullRequestResponseValue> targetPullRequests = new ArrayList<BitbucketPullRequestResponseValue>();
         for(BitbucketPullRequestResponseValue pullRequest : pullRequests) {
@@ -115,12 +115,9 @@ public class BitbucketRepository {
     }
 
     private boolean isBuildTarget(BitbucketPullRequestResponseValue pullRequest) {
-        logger.info("isBuildTarget");
-        logger.info("PULL REQUEST" + pullRequest.toString());
-
         boolean shouldBuild = true;
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
-            logger.info("Trigger conditions test!!!!");
+
             if (!triggerConditionsSatisfied(pullRequest)) {
                 return false;
             }
@@ -191,65 +188,95 @@ public class BitbucketRepository {
         return shouldBuild;
     }
 
-    private boolean triggerConditionsSatisfied(BitbucketPullRequestValue pullRequest) {
-        logger.info(pullRequest.toString());
+    private boolean triggerConditionsSatisfied(BitbucketPullRequestResponseValue pullRequest) {
+
         // Do we want trigger conditions?
         if(true) {
             if(true && !hasAuthorApproved(pullRequest)) {
+                logger.info("Author has not approved");
                 return false;
+            } else {
+                logger.info("Author has approved");
             }
 
             if(true && !haveRequiredParticipantsApproved(pullRequest)) {
+                logger.info("Not all required participants have approved");
                 return false;
+            } else {
+                logger.info("All required participants have approved");
             }
 
             if(false && !hasEnoughApprovals(pullRequest)) {
+                logger.info("Not enough approvals");
                 return false;
+            } else {
+                logger.info("Enough approvals");
             }
 
-            if(false && !haveAllParticipantsApproved(pullRequest)) {
+            if(true && !haveAllParticipantsApproved(pullRequest)) {
+                logger.info("Not all participants have approved");
                 return false;
+            } else {
+                logger.info("All participants have approved");
             }
         }
+
+        logger.info("Trigger conditions were satisfied!");
 
         return true;
     }
 
-    private boolean hasAuthorApproved(BitbucketPullRequestValue pullRequest) {
-        logger.info(pullRequest.getAuthor());
-        logger.info(pullRequest.getAuthor().getApproved());
-        return pullRequest.getAuthor().getApproved();
+    private boolean hasAuthorApproved(BitbucketPullRequestResponseValue pullRequest) {
+        String authorUsername = pullRequest.getAuthor().getUsername();
+
+        // find author in list of participants
+        for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
+            String username = participant.getUser().getUsername();
+
+            if(username.equals(authorUsername)) {
+                if(participant.getApproved()) {
+                    return true;
+                } else {
+                  return false;
+                }
+            }
+        }
+
+        logger.warning("Could not find author " + authorUsername + " in the list of pull request participants");
+
+        return false;
     }
 
-    private boolean haveRequiredParticipantsApproved(BitbucketPullRequestValue pullRequest) {
-        String[] requiredParticipants = {"Remco47"};
+    private boolean haveRequiredParticipantsApproved(BitbucketPullRequestResponseValue pullRequest) {
+        String[] requiredParticipants = {"FO_Jenkins"};
 
         for(String requiredParticipant : requiredParticipants) {
             boolean foundParticipant = false;
-            logger.info("Checking required participant: " + requiredParticipant);
 
             for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
-              logger.info("Checking " + participant.getUser().getUsername());
-                if(participant.getUser().getUsername() == requiredParticipant) {
+              String username = participant.getUser().getUsername();
+
+                if(username.equals(requiredParticipant)) {
                     foundParticipant = true;
 
-                    logger.info("Approved:" + participant.getApproved());
                     if(!participant.getApproved()) {
                         return false;
                     }
+
+                    continue;
                 }
             }
 
             if(!foundParticipant) {
-              logger.info("Did not find participant");
-              return false;
+                logger.warning("Did not find required pull request participant " + requiredParticipant);
+                return false;
             }
         }
 
         return true;
     }
 
-    private boolean hasEnoughApprovals(BitbucketPullRequestValue pullRequest) {
+    private boolean hasEnoughApprovals(BitbucketPullRequestResponseValue pullRequest) {
         int neededApprovals = 3;
         int numApprovals = 0;
 
@@ -262,10 +289,8 @@ public class BitbucketRepository {
         return numApprovals >= neededApprovals;
     }
 
-    private boolean haveAllParticipantsApproved(BitbucketPullRequestValue pullRequest) {
-      logger.info("Have all participants approveD??");
+    private boolean haveAllParticipantsApproved(BitbucketPullRequestResponseValue pullRequest) {
         for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
-          logger.info("Cecking particpant: " + participant.getUser().getUsername() + " -> " + participant.getApproved());
             if(!participant.getApproved()) {
                 return false;
             }

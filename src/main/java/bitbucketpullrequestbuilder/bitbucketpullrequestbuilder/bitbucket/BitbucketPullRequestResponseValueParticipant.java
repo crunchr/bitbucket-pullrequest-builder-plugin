@@ -9,7 +9,7 @@ import bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket.Bitbuck
 public class BitbucketPullRequestResponseValueParticipant {
     private String role;
     private BitbucketPullRequestResponseValueUser user;
-    private Boolean approved;
+    private boolean approved;
 
     public String getRole() {
       return role;
@@ -27,11 +27,11 @@ public class BitbucketPullRequestResponseValueParticipant {
       this.user = user;
     }
 
-    public Boolean getApproved() {
+    public boolean getApproved() {
       return approved;
     }
 
-    public void setApproved(Boolean approved) {
+    public void setApproved(boolean approved) {
       this.approved = approved;
     }
 }
