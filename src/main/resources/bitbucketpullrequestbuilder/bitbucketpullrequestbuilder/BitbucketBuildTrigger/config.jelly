@@ -23,23 +23,34 @@
   <f:entry title="Approve if build success?" field="approveIfSuccess">
     <f:checkbox />
   </f:entry>
-  <f:block>
+
+  <f:nested>
     <table>
-      <f:optionalBlock name="triggerCondition" title="Trigger conditions">
-        <f:entry title="Only build if pull request author has approved" field="requireAuthorApproval">
-          <f:checkbox />
-        </f:entry>
-        <f:optionalBlock name="requiredApprovals" title="Only build if approved by ...">
-          <f:entry title="" field="requireAuthorApproval">
-            <f:textbox />
+      <f:optionalBlock field="checkTriggerConditions" title="Enable trigger conditions" inline="true">
+        <f:section title="Trigger conditions">
+
+          <f:entry title="Only build if pull request author has approved" field="requireAuthorApproval">
+            <f:checkbox />
           </f:entry>
-        </f:optionalBlock>
-        <f:entry title="Minimum number of approvals" field="minNumApprovals">
-          <f:radio name="minNumApprovals" title="Minimum number of approvals" field="min" />
-          <f:textbox name="test" field="bla2" />
-          <f:radio name="Hallo" title="halalal" field="bla" />
-        </f:entry>
+
+          <f:optionalBlock field="requireUserApprovals" title="Only build if approved by certain users" inline="true">
+            <f:entry title="Required users" field="requiredUsers">
+              <f:textbox />
+            </f:entry>
+          </f:optionalBlock>
+
+          <f:optionalBlock field="requireMinNumApprovals" title="Require a minimum number of approvals" inline="true">
+            <f:radioBlock name="minNumApprovalsType" title="Minimum number of approvals" value="minApprovals" inline="true">
+              <f:entry title="Number of required approvals" field="minNumApprovals">
+                <f:textbox />
+              </f:entry>
+            </f:radioBlock>
+            <f:radioBlock name="minNumApprovalsType" title="Require aproval of every participant" value="allParticipants" inline="true">
+            </f:radioBlock>
+          </f:optionalBlock>
+
+        </f:section>
       </f:optionalBlock>
     </table>
-  </f:block>
+  </f:nested>
 </j:jelly>

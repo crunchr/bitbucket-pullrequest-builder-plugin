@@ -31,6 +31,15 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final boolean checkDestinationCommit;
     private final boolean approveIfSuccess;
 
+    // Trigger condition parameters
+    private final boolean checkTriggerConditions;
+    private final boolean requireAuthorApproval;
+    private final boolean requireUserApprovals;
+    private final String requiredUsers;
+    private boolean requireMinNumApprovals;
+    private final String minNumApprovalsType;
+    private final String minNumApprovals;
+
     transient private BitbucketPullRequestsBuilder bitbucketPullRequestsBuilder;
 
     @Extension
@@ -46,7 +55,14 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             String repositoryName,
             String ciSkipPhrases,
             boolean checkDestinationCommit,
-            boolean approveIfSuccess
+            boolean approveIfSuccess,
+            boolean checkTriggerConditions,
+            boolean requireAuthorApproval,
+            boolean requireUserApprovals,
+            String requiredUsers,
+            boolean requireMinNumApprovals,
+            String minNumApprovalsType,
+            String minNumApprovals
             ) throws ANTLRException {
         super(cron);
         this.projectPath = projectPath;
@@ -58,6 +74,14 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.ciSkipPhrases = ciSkipPhrases;
         this.checkDestinationCommit = checkDestinationCommit;
         this.approveIfSuccess = approveIfSuccess;
+
+        this.checkTriggerConditions = checkTriggerConditions;
+        this.requireAuthorApproval = requireAuthorApproval;
+        this.requireUserApprovals = requireUserApprovals;
+        this.requiredUsers = requiredUsers;
+        this.requireMinNumApprovals = requireMinNumApprovals;
+        this.minNumApprovalsType = minNumApprovalsType;
+        this.minNumApprovals = minNumApprovals;
     }
 
     public String getProjectPath() {
@@ -94,6 +118,34 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     public boolean getApproveIfSuccess() {
         return approveIfSuccess;
+    }
+
+    public boolean getCheckTriggerConditions() {
+        return checkTriggerConditions;
+    }
+
+    public boolean getRequireAuthorApproval() {
+        return requireAuthorApproval;
+    }
+
+    public boolean getRequireUserApprovals() {
+        return requireUserApprovals;
+    }
+
+    public String getRequiredUsers() {
+        return requiredUsers;
+    }
+
+    public boolean getRequireMinNumApprovals() {
+        return requireMinNumApprovals;
+    }
+
+    public String getMinNumApprovalsType() {
+        return minNumApprovalsType;
+    }
+
+    public String getMinNumApprovals() {
+        return minNumApprovals;
     }
 
     @Override

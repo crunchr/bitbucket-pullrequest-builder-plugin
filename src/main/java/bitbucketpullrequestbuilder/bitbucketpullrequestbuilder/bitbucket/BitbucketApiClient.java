@@ -39,6 +39,7 @@ public class BitbucketApiClient {
 
     public List<BitbucketPullRequestResponseValue> getPullRequests() {
         String response = getRequest(V2_API_BASE_URL + this.owner + "/" + this.repositoryName + "/pullrequests/");
+
         try {
             List<BitbucketPullRequestResponseValue> pullRequests = parsePullRequestJson(response).getPrValues();
             List<BitbucketPullRequestResponseValue> detailedPullRequests = new ArrayList<BitbucketPullRequestResponseValue>();

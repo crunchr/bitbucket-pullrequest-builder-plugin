@@ -134,10 +134,10 @@ public class BitbucketRepository {
 
     private boolean isBuildTarget(BitbucketPullRequestResponseValue pullRequest) {
         boolean shouldBuild = true;
+
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
 
-            // TODO: Check if trigger conditions are enabled
-            if (true && triggerConditionsSatisfied(pullRequest)) {
+            if (trigger.getCheckTriggerConditions() && triggerConditionsSatisfied(pullRequest)) {
                 return true;
             }
 
@@ -208,47 +208,74 @@ public class BitbucketRepository {
     }
 
     private boolean triggerConditionsSatisfied(BitbucketPullRequestResponseValue pullRequest) {
+        boolean noConditionsChecked = true;
+        String logString = "";
+
         // Only check if pull requests has not been aproved yet
         if(!approvedPullRequests.contains(pullRequest.getId())) {
-            if(true && !hasAuthorApproved(pullRequest)) {
-                logger.info("Author has not approved");
-                return false;
-            } else {
-                logger.info("Author has approved");
+            if(trigger.getRequireAuthorApproval()) {
+                noConditionsChecked = false;
+
+                if(!hasAuthorApproved(pullRequest)) {
+                    logString += "Author (" + pullRequest.getAuthor().getUsername() + ") has not approved - ";
+                    logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                    return false;
+                } else {
+                    logString += "Author (" + pullRequest.getAuthor().getUsername() + ") has approved - ";
+                }
             }
 
-            if(true && !haveRequiredParticipantsApproved(pullRequest)) {
-                logger.info("Not all required participants have approved");
-                return false;
-            } else {
-                logger.info("All required participants have approved");
+            if(trigger.getRequireUserApprovals()) {
+                noConditionsChecked = false;
+
+                if(!haveRequiredParticipantsApproved(pullRequest)) {
+                    logString += "Not all required participants have approved - ";
+                    logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                    return false;
+                } else {
+                    logString += "All required participants have approved - ";
+                }
             }
 
-            if(false && !hasEnoughApprovals(pullRequest)) {
-                logger.info("Not enough approvals");
-                return false;
-            } else {
-                logger.info("Enough approvals");
+            if(trigger.getRequireMinNumApprovals()) {
+                noConditionsChecked = false;
+                String minNumApprovalsType = trigger.getMinNumApprovalsType();
+
+                if(minNumApprovalsType.equals("minApprovals")) {
+                    if(!hasEnoughApprovals(pullRequest)) {
+                        logString += "Not enough approvals - ";
+                        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                        return false;
+                    } else {
+                        logString += "Enough approvals - ";
+                    }
+                } else if(minNumApprovalsType.equals("allParticipants")) {
+                    if(!haveAllParticipantsApproved(pullRequest)) {
+                        logString += "Not all participants have approved - ";
+                        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                        return false;
+                    } else {
+                        logString += "All participants have approved - ";
+                    }
+                }
             }
 
-            if(true && !haveAllParticipantsApproved(pullRequest)) {
-                logger.info("Not all participants have approved");
-                return false;
-            } else {
-                logger.info("All participants have approved");
+            // Do not trigger build if no conditions were checked
+            if(!noConditionsChecked) {
+              // Make sure build is not triggered again
+              approvedPullRequests.add(pullRequest.getId());
+
+              String currentPullRequests = "";
+
+              for(String pr : approvedPullRequests) {
+                  currentPullRequests += pr + ", ";
+              }
+
+              logger.info("Trigger conditions were satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+              logger.info("Approved pull requests: " + currentPullRequests);
+
+              return true;
             }
-
-            // Make sure build is not triggered again
-            approvedPullRequests.add(pullRequest.getId());
-
-            String currentPullRequests = "";
-
-            for(String pr : approvedPullRequests) {
-                currentPullRequests += pr + ", ";
-            }
-
-            logger.info("Trigger conditions were satisfied! Approved pull requests: " + currentPullRequests);
-            return true;
         }
 
         return false;
@@ -276,7 +303,7 @@ public class BitbucketRepository {
     }
 
     private boolean haveRequiredParticipantsApproved(BitbucketPullRequestResponseValue pullRequest) {
-        String[] requiredParticipants = {"FO_Jenkins"};
+        String[] requiredParticipants = trigger.getRequiredUsers().split("[\\s]*,[\\s]*");
 
         for(String requiredParticipant : requiredParticipants) {
             boolean foundParticipant = false;
@@ -305,14 +332,23 @@ public class BitbucketRepository {
     }
 
     private boolean hasEnoughApprovals(BitbucketPullRequestResponseValue pullRequest) {
-        int neededApprovals = 3;
         int numApprovals = 0;
+        int neededApprovals;
+
+        try {
+            neededApprovals = Integer.parseInt(trigger.getMinNumApprovals());
+        } catch(NumberFormatException e) {
+            logger.warning("Could not parse minimum number of required approvals: " + trigger.getMinNumApprovals());
+            return false;
+        }
 
         for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
             if(participant.getApproved()) {
                 numApprovals++;
             }
         }
+
+        logger.info("Number of approvals: " + numApprovals + " (needed: " + neededApprovals + ")");
 
         return numApprovals >= neededApprovals;
     }
