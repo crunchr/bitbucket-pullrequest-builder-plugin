@@ -2,6 +2,7 @@ package bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Created by nishio
@@ -22,6 +23,10 @@ public class BitbucketPullRequestResponseValue {
     private BitbucketPullRequestResponseValueUser author;
     private BitbucketPullRequestResponseValueParticipant[] participants;
     private String id;
+
+    @JsonIgnore
+    private boolean sourceBranchHasChanged;
+    private boolean targetBranchHasChanged;
 
     public String getDescription() {
         return description;
@@ -145,4 +150,19 @@ public class BitbucketPullRequestResponseValue {
         this.id = id;
     }
 
+    public boolean getSourceBranchHasChanged() {
+        return sourceBranchHasChanged;
+    }
+
+    public void setSourceBranchHasChanged(boolean sourceBranchHasChanged) {
+        this.sourceBranchHasChanged = sourceBranchHasChanged;
+    }
+
+    public boolean getTargetBranchHasChanged() {
+        return targetBranchHasChanged;
+    }
+
+    public void setTargetBranchHasChanged(boolean targetBranchHasChanged) {
+        this.targetBranchHasChanged = targetBranchHasChanged;
+    }
 }

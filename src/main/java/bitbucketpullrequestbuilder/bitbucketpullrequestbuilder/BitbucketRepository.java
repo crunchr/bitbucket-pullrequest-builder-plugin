@@ -105,7 +105,9 @@ public class BitbucketRepository {
                     pullRequest.getTitle(),
                     pullRequest.getSource().getCommit().getHash(),
                     pullRequest.getDestination().getCommit().getHash(),
-                    commentId);
+                    commentId,
+                    pullRequest.getSourceBranchHasChanged(),
+                    pullRequest.getTargetBranchHasChanged());
             this.builder.getTrigger().startJob(cause);
         }
     }
@@ -134,12 +136,10 @@ public class BitbucketRepository {
 
     private boolean isBuildTarget(BitbucketPullRequestResponseValue pullRequest) {
         boolean shouldBuild = true;
+        boolean sourceBranchHasChanged = true;
+        boolean targetBranchHasChanged = false;
 
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
-
-            if (trigger.getCheckTriggerConditions() && triggerConditionsSatisfied(pullRequest)) {
-                return true;
-            }
 
             if (isSkipBuild(pullRequest.getTitle())) {
                 return false;
@@ -186,10 +186,15 @@ public class BitbucketRepository {
 
                         //first check source commit -- if it doesn't match, just move on. If it does, investigate further.
                         if (sourceCommitMatch.equalsIgnoreCase(sourceCommit)) {
-                            // if we're checking destination commits, and if this doesn't match, then move on.
-                            if (this.trigger.getCheckDestinationCommit()
-                                    && (!destinationCommitMatch.equalsIgnoreCase(destinationCommit))) {
-                            	continue;
+                            sourceBranchHasChanged = false;
+
+                            if((!destinationCommitMatch.equalsIgnoreCase(destinationCommit))) {
+                                targetBranchHasChanged = true;
+
+                                // if we're checking destination commits, and if this doesn't match, then move on.
+                                if (this.trigger.getCheckDestinationCommit()) {
+                                	  continue;
+                                }
                             }
 
                             shouldBuild = false;
@@ -204,6 +209,21 @@ public class BitbucketRepository {
                 }
             }
         }
+
+        // Export variable that indicates whether either the source branch or the destination (if enabled in UI) branch has changed
+        pullRequest.setSourceBranchHasChanged(sourceBranchHasChanged);
+        pullRequest.setTargetBranchHasChanged(targetBranchHasChanged);
+
+        if (trigger.getCheckTriggerConditions()) {
+            logger.info("Branches have changed?? Source branch: " + sourceBranchHasChanged + " Target branch: " + targetBranchHasChanged);
+            if(triggerConditionsSatisfied(pullRequest) ||
+                (approvedPullRequests.contains(pullRequest.getId()) && (sourceBranchHasChanged || targetBranchHasChanged))) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         return shouldBuild;
     }
 
