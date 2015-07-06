@@ -107,7 +107,8 @@ public class BitbucketRepository {
                     pullRequest.getDestination().getCommit().getHash(),
                     commentId,
                     pullRequest.getSourceBranchHasChanged(),
-                    pullRequest.getTargetBranchHasChanged());
+                    pullRequest.getTargetBranchHasChanged(),
+                    pullRequest.getApprovalConditionsSatisfied());
             this.builder.getTrigger().startJob(cause);
         }
     }
@@ -165,8 +166,8 @@ public class BitbucketRepository {
                     }
 
                     //These will match any start or finish message -- need to check commits
-                    String project_build_start = String.format(BUILD_START_REGEX, builder.getProject().getDisplayName());
-                    String project_build_finished = String.format(BUILD_FINISH_REGEX, builder.getProject().getDisplayName());
+                    String project_build_start = String.format(BUILD_START_REGEX, ".*");//builder.getProject().getDisplayName());
+                    String project_build_finished = String.format(BUILD_FINISH_REGEX, ".*");//builder.getProject().getDisplayName());
                     Matcher startMatcher = Pattern.compile(project_build_start, Pattern.CASE_INSENSITIVE).matcher(content);
                     Matcher finishMatcher = Pattern.compile(project_build_finished, Pattern.CASE_INSENSITIVE).matcher(content);
 
@@ -207,6 +208,27 @@ public class BitbucketRepository {
                         break;
                     }
                 }
+
+                if (trigger.getCheckTriggerConditions()) {
+                    boolean triggerConditionsHaveBeenSatisfied = triggerConditionsSatisfied(pullRequest);
+
+                    pullRequest.setApprovalConditionsSatisfied(triggerConditionsHaveBeenSatisfied || approvedPullRequests.contains(pullRequest.getId()));
+
+                    if (triggerConditionsHaveBeenSatisfied) {
+                        return true;
+                    }
+
+                    if (trigger.getCheckDestinationCommit() && targetBranchHasChanged) {
+                        // Do not trigger when the target branch changes while the approval
+                        // conditions have not yet been satisfied
+                        if(!approvedPullRequests.contains(pullRequest.getId())) {
+                            logger.info("Not triggering (target branch changed, but approval conditions have not yet been satisfied");
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
             }
         }
 
@@ -214,15 +236,7 @@ public class BitbucketRepository {
         pullRequest.setSourceBranchHasChanged(sourceBranchHasChanged);
         pullRequest.setTargetBranchHasChanged(targetBranchHasChanged);
 
-        if (trigger.getCheckTriggerConditions()) {
-            logger.info("Branches have changed?? Source branch: " + sourceBranchHasChanged + " Target branch: " + targetBranchHasChanged);
-            if(triggerConditionsSatisfied(pullRequest) ||
-                (approvedPullRequests.contains(pullRequest.getId()) && (sourceBranchHasChanged || targetBranchHasChanged))) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        logger.info("Branches have changed?? Source branch: " + sourceBranchHasChanged + " Target branch: " + targetBranchHasChanged);
 
         return shouldBuild;
     }

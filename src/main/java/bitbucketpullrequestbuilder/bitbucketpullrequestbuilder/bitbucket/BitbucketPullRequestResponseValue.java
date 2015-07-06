@@ -26,7 +26,10 @@ public class BitbucketPullRequestResponseValue {
 
     @JsonIgnore
     private boolean sourceBranchHasChanged;
+    @JsonIgnore
     private boolean targetBranchHasChanged;
+    @JsonIgnore
+    private boolean approvalConditionsSatisfied;
 
     public String getDescription() {
         return description;
@@ -164,5 +167,13 @@ public class BitbucketPullRequestResponseValue {
 
     public void setTargetBranchHasChanged(boolean targetBranchHasChanged) {
         this.targetBranchHasChanged = targetBranchHasChanged;
+    }
+
+    public boolean getApprovalConditionsSatisfied() {
+        return approvalConditionsSatisfied;
+    }
+
+    public void setApprovalConditionsSatisfied(boolean approvalConditionsSatisfied) {
+        this.approvalConditionsSatisfied = approvalConditionsSatisfied;
     }
 }

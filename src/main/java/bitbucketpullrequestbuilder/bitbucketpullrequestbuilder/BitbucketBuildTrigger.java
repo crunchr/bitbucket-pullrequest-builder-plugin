@@ -183,6 +183,7 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         values.put("pullRequestTitle", new StringParameterValue("pullRequestTitle", cause.getPullRequestTitle()));
         values.put("sourceBranchHasChanged", new BooleanParameterValue("sourceBranchHasChanged", cause.getSourceBranchHasChanged()));
         values.put("targetBranchHasChanged", new BooleanParameterValue("targetBranchHasChanged", cause.getTargetBranchHasChanged()));
+        values.put("approvalConditionsSatisfied", new BooleanParameterValue("approvalConditionsSatisfied", cause.getApprovalConditionsSatisfied()));
         return this.job.scheduleBuild2(0, cause, new ParametersAction(new ArrayList(values.values())));
     }
 

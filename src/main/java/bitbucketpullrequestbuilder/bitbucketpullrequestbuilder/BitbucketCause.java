@@ -19,6 +19,7 @@ public class BitbucketCause extends Cause {
     private final String buildStartCommentId;
     private final boolean sourceBranchHasChanged;
     private final boolean targetBranchHasChanged;
+    private final boolean approvalConditionsSatisfied;
     public static final String BITBUCKET_URL = "https://bitbucket.org/";
 
     public BitbucketCause(String sourceBranch,
@@ -33,7 +34,8 @@ public class BitbucketCause extends Cause {
                           String destinationCommitHash,
                           String buildStartCommentId,
                           boolean sourceBranchHasChanged,
-                          boolean targetBranchHasChanged) {
+                          boolean targetBranchHasChanged,
+                          boolean approvalConditionsSatisfied) {
         this.sourceBranch = sourceBranch;
         this.targetBranch = targetBranch;
         this.repositoryOwner = repositoryOwner;
@@ -47,6 +49,7 @@ public class BitbucketCause extends Cause {
         this.buildStartCommentId = buildStartCommentId;
         this.sourceBranchHasChanged = sourceBranchHasChanged;
         this.targetBranchHasChanged = targetBranchHasChanged;
+        this.approvalConditionsSatisfied = approvalConditionsSatisfied;
     }
 
     public String getSourceBranch() {
@@ -90,6 +93,8 @@ public class BitbucketCause extends Cause {
     public boolean getSourceBranchHasChanged() { return sourceBranchHasChanged; }
 
     public boolean getTargetBranchHasChanged() { return targetBranchHasChanged; }
+
+    public boolean getApprovalConditionsSatisfied() { return approvalConditionsSatisfied; }
 
     @Override
     public String getShortDescription() {
