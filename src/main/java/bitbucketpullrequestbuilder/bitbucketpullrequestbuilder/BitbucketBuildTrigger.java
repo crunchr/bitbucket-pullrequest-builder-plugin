@@ -39,6 +39,7 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private boolean requireMinNumApprovals;
     private final String minNumApprovalsType;
     private final String minNumApprovals;
+    private final String allParticipantsIgnoredUsers;
 
     transient private BitbucketPullRequestsBuilder bitbucketPullRequestsBuilder;
 
@@ -62,7 +63,8 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             String requiredUsers,
             boolean requireMinNumApprovals,
             String minNumApprovalsType,
-            String minNumApprovals
+            String minNumApprovals,
+            String allParticipantsIgnoredUsers
             ) throws ANTLRException {
         super(cron);
         this.projectPath = projectPath;
@@ -82,6 +84,7 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.requireMinNumApprovals = requireMinNumApprovals;
         this.minNumApprovalsType = minNumApprovalsType;
         this.minNumApprovals = minNumApprovals;
+        this.allParticipantsIgnoredUsers = allParticipantsIgnoredUsers;
     }
 
     public String getProjectPath() {
@@ -146,6 +149,10 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     public String getMinNumApprovals() {
         return minNumApprovals;
+    }
+
+    public String getAllParticipantsIgnoredUsers() {
+        return allParticipantsIgnoredUsers;
     }
 
     @Override

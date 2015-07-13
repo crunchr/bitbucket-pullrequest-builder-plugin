@@ -1,5 +1,6 @@
 package bitbucketpullrequestbuilder.bitbucketpullrequestbuilder;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -388,8 +389,16 @@ public class BitbucketRepository {
     }
 
     private boolean haveAllParticipantsApproved(BitbucketPullRequestResponseValue pullRequest) {
+        String ignoredUsersString = trigger.getAllParticipantsIgnoredUsers();
+
+        if(ignoredUsersString == null) {
+            ignoredUsersString = "";
+        }
+
+        String[] ignoredParticipants = ignoredUsersString.split("[\\s]*,[\\s]*");
+
         for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
-            if(!participant.getApproved()) {
+            if(!Arrays.asList(ignoredParticipants).contains(participant.getUser().getUsername()) && !participant.getApproved()) {
                 return false;
             }
         }
