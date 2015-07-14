@@ -38,9 +38,11 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final boolean requireAuthorApproval;
     private final boolean requireUserApprovals;
     private final String requiredUsers;
+
     private boolean requireMinNumApprovals;
-    private final String minNumApprovalsType;
     private final String minNumApprovals;
+
+    private boolean requireAllParticipants;
     private final String allParticipantsIgnoredUsers;
 
     transient private BitbucketPullRequestsBuilder bitbucketPullRequestsBuilder;
@@ -66,8 +68,8 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             boolean requireUserApprovals,
             String requiredUsers,
             boolean requireMinNumApprovals,
-            String minNumApprovalsType,
             String minNumApprovals,
+            boolean requireAllParticipants,
             String allParticipantsIgnoredUsers
             ) throws ANTLRException {
         super(cron);
@@ -87,9 +89,11 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.requireAuthorApproval = requireAuthorApproval;
         this.requireUserApprovals = requireUserApprovals;
         this.requiredUsers = requiredUsers;
+
         this.requireMinNumApprovals = requireMinNumApprovals;
-        this.minNumApprovalsType = minNumApprovalsType;
         this.minNumApprovals = minNumApprovals;
+
+        this.requireAllParticipants = requireAllParticipants;
         this.allParticipantsIgnoredUsers = allParticipantsIgnoredUsers;
     }
 
@@ -157,12 +161,12 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         return requireMinNumApprovals;
     }
 
-    public String getMinNumApprovalsType() {
-        return minNumApprovalsType;
-    }
-
     public String getMinNumApprovals() {
         return minNumApprovals;
+    }
+
+    public boolean getRequireAllParticipants() {
+        return requireAllParticipants;
     }
 
     public String getAllParticipantsIgnoredUsers() {

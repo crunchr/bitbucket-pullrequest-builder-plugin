@@ -278,24 +278,25 @@ public class BitbucketRepository {
 
             if(trigger.getRequireMinNumApprovals()) {
                 noConditionsChecked = false;
-                String minNumApprovalsType = trigger.getMinNumApprovalsType();
 
-                if(minNumApprovalsType.equals("minApprovals")) {
-                    if(!hasEnoughApprovals(pullRequest)) {
-                        logString += "Not enough approvals - ";
-                        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
-                        return false;
-                    } else {
-                        logString += "Enough approvals - ";
-                    }
-                } else if(minNumApprovalsType.equals("allParticipants")) {
-                    if(!haveAllParticipantsApproved(pullRequest)) {
-                        logString += "Not all participants have approved - ";
-                        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
-                        return false;
-                    } else {
-                        logString += "All participants have approved - ";
-                    }
+                if(!hasEnoughApprovals(pullRequest)) {
+                    logString += "Not enough approvals - ";
+                    logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                    return false;
+                } else {
+                    logString += "Enough approvals - ";
+                }
+            }
+
+            if(trigger.getRequireAllParticipants()) {
+                noConditionsChecked = false;
+
+                if(!haveAllParticipantsApproved(pullRequest)) {
+                    logString += "Not all participants have approved - ";
+                    logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId() + ". Info: " + logString);
+                    return false;
+                } else {
+                    logString += "All participants have approved - ";
                 }
             }
 

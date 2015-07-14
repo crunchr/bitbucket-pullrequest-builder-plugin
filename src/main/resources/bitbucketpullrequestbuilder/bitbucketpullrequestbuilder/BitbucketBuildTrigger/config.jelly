@@ -46,16 +46,15 @@
           </f:optionalBlock>
 
           <f:optionalBlock field="requireMinNumApprovals" title="Require a minimum number of approvals" inline="true">
-            <f:radioBlock name="minNumApprovalsType" title="Minimum number of approvals" value="minApprovals" inline="true">
-              <f:entry title="Number of required approvals" field="minNumApprovals">
-                <f:textbox />
-              </f:entry>
-            </f:radioBlock>
-            <f:radioBlock name="minNumApprovalsType" title="Require aproval of every participant" value="allParticipants" inline="true">
-              <f:entry title="Except for the following users" field="allParticipantsIgnoredUsers">
-                <f:textbox />
-              </f:entry>
-            </f:radioBlock>
+            <f:entry title="Number of required approvals" field="minNumApprovals">
+              <f:textbox />
+            </f:entry>
+          </f:optionalBlock>
+
+          <f:optionalBlock field="requireAllParticipants" title="Require aproval of every participant" inline="true">
+            <f:entry title="Except for the following users" field="allParticipantsIgnoredUsers">
+              <f:textbox />
+            </f:entry>
           </f:optionalBlock>
 
         </f:section>
