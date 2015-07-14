@@ -30,6 +30,8 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String ciSkipPhrases;
     private final boolean checkDestinationCommit;
     private final boolean approveIfSuccess;
+    private final boolean modifyBuildDescription;
+    private final boolean addBuildDescriptionToComment;
 
     // Trigger condition parameters
     private final boolean checkTriggerConditions;
@@ -57,6 +59,8 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             String ciSkipPhrases,
             boolean checkDestinationCommit,
             boolean approveIfSuccess,
+            boolean modifyBuildDescription,
+            boolean addBuildDescriptionToComment,
             boolean checkTriggerConditions,
             boolean requireAuthorApproval,
             boolean requireUserApprovals,
@@ -76,6 +80,8 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.ciSkipPhrases = ciSkipPhrases;
         this.checkDestinationCommit = checkDestinationCommit;
         this.approveIfSuccess = approveIfSuccess;
+        this.modifyBuildDescription = modifyBuildDescription;
+        this.addBuildDescriptionToComment = addBuildDescriptionToComment;
 
         this.checkTriggerConditions = checkTriggerConditions;
         this.requireAuthorApproval = requireAuthorApproval;
@@ -121,6 +127,14 @@ public class BitbucketBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     public boolean getApproveIfSuccess() {
         return approveIfSuccess;
+    }
+
+    public boolean getModifyBuildDescription() {
+        return modifyBuildDescription;
+    }
+
+    public boolean getAddBuildDescriptionToComment() {
+        return addBuildDescriptionToComment;
     }
 
     public boolean getCheckTriggerConditions() {

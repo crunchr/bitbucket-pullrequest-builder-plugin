@@ -35,10 +35,13 @@ public class BitbucketBuilds {
         if (cause == null) {
             return;
         }
-        try {
-            build.setDescription(cause.getShortDescription());
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Can't update build description", e);
+
+        if(trigger.getModifyBuildDescription()) {
+            try {
+                build.setDescription(cause.getShortDescription());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Can't update build description", e);
+            }
         }
     }
 
@@ -57,7 +60,8 @@ public class BitbucketBuilds {
             buildUrl = rootUrl + build.getUrl();
         }
         repository.deletePullRequestComment(cause.getPullRequestId(), cause.getBuildStartCommentId());
-        repository.postFinishedComment(cause.getPullRequestId(), cause.getSourceCommitHash(), cause.getDestinationCommitHash(), result == Result.SUCCESS, buildUrl);
+        repository.postFinishedComment(cause.getPullRequestId(), cause.getSourceCommitHash(), cause.getDestinationCommitHash(),
+            result == Result.SUCCESS, buildUrl, build.getDescription());
         if ( this.trigger.getApproveIfSuccess() && result == Result.SUCCESS ) {
             this.repository.postPullRequestApproval(cause.getPullRequestId());
         }

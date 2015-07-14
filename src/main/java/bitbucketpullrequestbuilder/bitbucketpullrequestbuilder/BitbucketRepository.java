@@ -118,12 +118,16 @@ public class BitbucketRepository {
         this.client.deletePullRequestComment(pullRequestId,commentId);
     }
 
-    public void postFinishedComment(String pullRequestId, String sourceCommit,  String destinationCommit, boolean success, String buildUrl) {
+    public void postFinishedComment(String pullRequestId, String sourceCommit,  String destinationCommit, boolean success, String buildUrl, String buildDescription) {
         String message = BUILD_FAILURE_COMMENT;
-        if (success){
+        if (success) {
             message = BUILD_SUCCESS_COMMENT;
         }
         String comment = String.format(BUILD_FINISH_SENTENCE, builder.getProject().getDisplayName(), sourceCommit, destinationCommit, message, buildUrl);
+
+        if(this.trigger.getAddBuildDescriptionToComment() && buildDescription != null && !buildDescription.isEmpty()) {
+            comment += "\n\n" + buildDescription;
+        }
 
         this.client.postPullRequestComment(pullRequestId, comment);
     }
