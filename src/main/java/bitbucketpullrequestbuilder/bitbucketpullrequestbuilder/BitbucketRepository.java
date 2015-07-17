@@ -171,8 +171,8 @@ public class BitbucketRepository {
                     }
 
                     //These will match any start or finish message -- need to check commits
-                    String project_build_start = String.format(BUILD_START_REGEX, ".*");//builder.getProject().getDisplayName());
-                    String project_build_finished = String.format(BUILD_FINISH_REGEX, ".*");//builder.getProject().getDisplayName());
+                    String project_build_start = String.format(BUILD_START_REGEX, builder.getProject().getDisplayName());
+                    String project_build_finished = String.format(BUILD_FINISH_REGEX, builder.getProject().getDisplayName());
                     Matcher startMatcher = Pattern.compile(project_build_start, Pattern.CASE_INSENSITIVE).matcher(content);
                     Matcher finishMatcher = Pattern.compile(project_build_finished, Pattern.CASE_INSENSITIVE).matcher(content);
 
@@ -220,17 +220,15 @@ public class BitbucketRepository {
                     pullRequest.setApprovalConditionsSatisfied(triggerConditionsHaveBeenSatisfied || approvedPullRequests.contains(pullRequest.getId()));
 
                     if (triggerConditionsHaveBeenSatisfied) {
-                        return true;
-                    }
-
-                    if (trigger.getCheckDestinationCommit() && targetBranchHasChanged) {
+                        shouldBuild = true;
+                    } else if (trigger.getCheckDestinationCommit() && targetBranchHasChanged) {
                         // Do not trigger when the target branch changes while the approval
                         // conditions have not yet been satisfied
                         if(!approvedPullRequests.contains(pullRequest.getId())) {
                             logger.info("Not triggering (target branch changed, but approval conditions have not yet been satisfied");
-                            return false;
+                            shouldBuild = false;
                         } else {
-                            return true;
+                            shouldBuild = true;
                         }
                     }
                 }
@@ -343,13 +341,17 @@ public class BitbucketRepository {
     }
 
     private boolean haveRequiredParticipantsApproved(BitbucketPullRequestResponseValue pullRequest) {
+        if(trigger.getRequiredUsers().equals("")) {
+            return true;
+        }
+
         String[] requiredParticipants = trigger.getRequiredUsers().split("[\\s]*,[\\s]*");
 
         for(String requiredParticipant : requiredParticipants) {
             boolean foundParticipant = false;
 
             for(BitbucketPullRequestResponseValueParticipant participant : pullRequest.getParticipants()) {
-              String username = participant.getUser().getUsername();
+                String username = participant.getUser().getUsername();
 
                 if(username.equals(requiredParticipant)) {
                     foundParticipant = true;
