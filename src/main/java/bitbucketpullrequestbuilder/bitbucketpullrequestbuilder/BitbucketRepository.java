@@ -30,8 +30,8 @@ public class BitbucketRepository {
     public static final String BUILD_FINISH_SENTENCE = BUILD_FINISH_MARKER + " \n\n **%s** - %s";
     public static final String BUILD_REQUEST_MARKER = "test this please";
 
-    public static final String BUILD_SUCCESS_COMMENT =  ":white_check_mark: SUCCESS";
-    public static final String BUILD_FAILURE_COMMENT = ":x: FAILURE";
+    public static final String BUILD_SUCCESS_COMMENT =  "SUCCESS";
+    public static final String BUILD_FAILURE_COMMENT = "FAILURE";
     private String projectPath;
     private BitbucketPullRequestsBuilder builder;
     private BitbucketBuildTrigger trigger;
