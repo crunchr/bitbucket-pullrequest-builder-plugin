@@ -76,6 +76,16 @@ public class BitbucketBuildTrigger extends Trigger<Job<?, ?>> {
     private final boolean approveIfSuccess;
     private final boolean cancelOutdatedJobs;
     private final String commentTrigger;
+    private final boolean modifyBuildDescription;
+    private final boolean addBuildDescriptionToComment;
+    private final boolean checkTriggerConditions;
+    private final boolean requireAuthorApproval;
+    private final boolean requireUserApprovals;
+    private final String requiredUsers;
+    private final boolean requireMinNumApprovals;
+    private final String minNumApprovals;
+    private final boolean requireAllParticipants;
+    private final String allParticipantsIgnoredUsers;
 
     transient private BitbucketPullRequestsBuilder bitbucketPullRequestsBuilder;
 
@@ -99,7 +109,17 @@ public class BitbucketBuildTrigger extends Trigger<Job<?, ?>> {
             boolean checkDestinationCommit,
             boolean approveIfSuccess,
             boolean cancelOutdatedJobs,
-            String commentTrigger
+            String commentTrigger,
+            boolean modifyBuildDescription,
+            boolean addBuildDescriptionToComment,
+            boolean checkTriggerConditions,
+            boolean requireAuthorApproval,
+            boolean requireUserApprovals,
+            String requiredUsers,
+            boolean requireMinNumApprovals,
+            String minNumApprovals,
+            boolean requireAllParticipants,
+            String allParticipantsIgnoredUsers
             ) throws ANTLRException {
         super(cron);
         this.projectPath = projectPath;
@@ -119,6 +139,16 @@ public class BitbucketBuildTrigger extends Trigger<Job<?, ?>> {
         this.approveIfSuccess = approveIfSuccess;
         this.cancelOutdatedJobs = cancelOutdatedJobs;
         this.commentTrigger = commentTrigger;
+        this.modifyBuildDescription = modifyBuildDescription;
+        this.addBuildDescriptionToComment = addBuildDescriptionToComment;
+        this.checkTriggerConditions = checkTriggerConditions;
+        this.requireAuthorApproval = requireAuthorApproval;
+        this.requireUserApprovals = requireUserApprovals;
+        this.requiredUsers = requiredUsers;
+        this.requireMinNumApprovals = requireMinNumApprovals;
+        this.minNumApprovals = minNumApprovals;
+        this.requireAllParticipants = requireAllParticipants;
+        this.allParticipantsIgnoredUsers = allParticipantsIgnoredUsers;
     }
 
     public String getProjectPath() {
@@ -190,6 +220,46 @@ public class BitbucketBuildTrigger extends Trigger<Job<?, ?>> {
      */
     public String getCommentTrigger() {
         return commentTrigger;
+    }
+
+    public boolean getModifyBuildDescription() {
+        return modifyBuildDescription;
+    }
+
+    public boolean getAddBuildDescriptionToComment() {
+        return addBuildDescriptionToComment;
+    }
+
+    public boolean getCheckTriggerConditions() {
+        return checkTriggerConditions;
+    }
+
+    public boolean getRequireAuthorApproval() {
+        return requireAuthorApproval;
+    }
+
+    public boolean getRequireUserApprovals() {
+        return requireUserApprovals;
+    }
+
+    public String getRequiredUsers() {
+        return requiredUsers;
+    }
+
+    public boolean getRequireMinNumApprovals() {
+        return requireMinNumApprovals;
+    }
+
+    public String getMinNumApprovals() {
+        return minNumApprovals;
+    }
+
+    public boolean getRequireAllParticipants() {
+        return requireAllParticipants;
+    }
+
+    public String getAllParticipantsIgnoredUsers() {
+        return allParticipantsIgnoredUsers;
     }
 
     @Override
