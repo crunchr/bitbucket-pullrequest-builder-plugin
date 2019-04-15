@@ -29,7 +29,9 @@ public class BitbucketBuilds {
             return;
         }
         try {
-            build.setDescription(cause.getShortDescription());
+            if(trigger.getModifyBuildDescription()) {
+                build.setDescription(cause.getShortDescription());
+            }
             String buildUrl = getBuildUrl(build.getUrl());
             repository.setBuildStatus(cause, BuildState.INPROGRESS, buildUrl);
         } catch (IOException e) {
