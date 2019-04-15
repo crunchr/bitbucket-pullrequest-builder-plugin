@@ -28,6 +28,7 @@ public class CloudPullrequest extends AbstractPullrequest {
     private String     mergeCommit;
     private String     id;
     private Author     author;
+    private boolean    mergeConditionsSatisfied;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Revision implements AbstractPullrequest.Revision {
@@ -365,4 +366,11 @@ public class CloudPullrequest extends AbstractPullrequest {
         this.author = author;
     }
 
+    public boolean getMergeConditionsSatisfied() {
+        return mergeConditionsSatisfied;
+    }
+
+    public void setMergeConditionsSatisfied(boolean mergeConditionsSatisfied) {
+        this.mergeConditionsSatisfied = mergeConditionsSatisfied;
+    }
 }

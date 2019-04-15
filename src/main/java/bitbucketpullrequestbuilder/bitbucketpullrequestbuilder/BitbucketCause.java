@@ -14,8 +14,20 @@ public abstract class BitbucketCause extends Cause {
     private final String sourceCommitHash;
     private final String destinationCommitHash;
     private final String pullRequestAuthor;
+    private final boolean mergeConditionsSatisfied;
 
-    protected BitbucketCause(String sourceBranch, String targetBranch, String repositoryOwner, String repositoryName, String pullRequestId, String destinationRepositoryOwner, String destinationRepositoryName, String pullRequestTitle, String sourceCommitHash, String destinationCommitHash, String pullRequestAuthor) {
+    protected BitbucketCause(String sourceBranch,
+                             String targetBranch,
+                             String repositoryOwner,
+                             String repositoryName,
+                             String pullRequestId,
+                             String destinationRepositoryOwner,
+                             String destinationRepositoryName,
+                             String pullRequestTitle,
+                             String sourceCommitHash,
+                             String destinationCommitHash,
+                             String pullRequestAuthor,
+                             boolean mergeConditionsSatisfied) {
         this.sourceBranch = sourceBranch;
         this.targetBranch = targetBranch;
         this.repositoryOwner = repositoryOwner;
@@ -27,6 +39,7 @@ public abstract class BitbucketCause extends Cause {
         this.sourceCommitHash = sourceCommitHash;
         this.destinationCommitHash = destinationCommitHash;
         this.pullRequestAuthor = pullRequestAuthor;
+        this.mergeConditionsSatisfied = mergeConditionsSatisfied;
     }
 
     public String getSourceBranch() {
@@ -68,4 +81,6 @@ public abstract class BitbucketCause extends Cause {
     public String getPullRequestAuthor() {
         return this.pullRequestAuthor;
     }
+
+    public boolean getMergeConditionsSatisfied() { return mergeConditionsSatisfied; }
 }

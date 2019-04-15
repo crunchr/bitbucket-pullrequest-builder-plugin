@@ -19,8 +19,20 @@ public class CloudBitbucketCause extends BitbucketCause {
                                String pullRequestTitle,
                                String sourceCommitHash,
                                String destinationCommitHash,
-                               String pullRequestAuthor) {
-        super(sourceBranch, targetBranch, repositoryOwner, repositoryName, pullRequestId, destinationRepositoryOwner, destinationRepositoryName, pullRequestTitle, sourceCommitHash, destinationCommitHash, pullRequestAuthor);
+                               String pullRequestAuthor,
+                               boolean mergeConditionsSatisfied) {
+        super(sourceBranch,
+              targetBranch,
+              repositoryOwner,
+              repositoryName,
+              pullRequestId,
+              destinationRepositoryOwner,
+              destinationRepositoryName,
+              pullRequestTitle,
+              sourceCommitHash,
+              destinationCommitHash,
+              pullRequestAuthor,
+              mergeConditionsSatisfied);
     }
 
     @Override

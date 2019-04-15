@@ -106,4 +106,6 @@ public abstract class AbstractPullrequest {
     public abstract String getId();
 
     public abstract Author getAuthor();
+
+    public abstract boolean getMergeConditionsSatisfied();
 }

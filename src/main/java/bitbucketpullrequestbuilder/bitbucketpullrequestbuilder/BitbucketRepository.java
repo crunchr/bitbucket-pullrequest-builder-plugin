@@ -166,8 +166,9 @@ public class BitbucketRepository {
                 pullRequest.getDestination().getRepository().getRepositoryName(),
                 pullRequest.getTitle(),
                 pullRequest.getSource().getCommit().getHash(),
-                    destinationCommitHash,
-                pullRequest.getAuthor().getCombinedUsername()
+                destinationCommitHash,
+                pullRequest.getAuthor().getCombinedUsername(),
+                pullRequest.getMergeConditionsSatisfied()
             );
         } else {
             cause = new ServerBitbucketCause(
@@ -182,7 +183,8 @@ public class BitbucketRepository {
                 pullRequest.getTitle(),
                 pullRequest.getSource().getCommit().getHash(),
                 pullRequest.getDestination().getCommit().getHash(),
-                pullRequest.getAuthor().getCombinedUsername()
+                pullRequest.getAuthor().getCombinedUsername(),
+                pullRequest.getMergeConditionsSatisfied()
             );
         }
         return cause;

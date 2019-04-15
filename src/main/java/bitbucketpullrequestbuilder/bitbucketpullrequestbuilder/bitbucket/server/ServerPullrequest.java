@@ -19,6 +19,7 @@ import java.util.Objects;
 public class ServerPullrequest extends AbstractPullrequest {
     private String id;
     private String title;
+    private boolean mergeConditionsSatisfied;
 
     @JsonProperty("toRef")
     private Revision toRef;
@@ -57,6 +58,15 @@ public class ServerPullrequest extends AbstractPullrequest {
     @Override
     public Author getAuthor() {
         return author;
+    }
+
+    @Override
+    public boolean getMergeConditionsSatisfied() {
+        return mergeConditionsSatisfied;
+    }
+
+    public void setMergeConditionsSatisfied(boolean mergeConditionsSatisfied) {
+        this.mergeConditionsSatisfied = mergeConditionsSatisfied;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
