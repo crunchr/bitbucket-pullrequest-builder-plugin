@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +21,7 @@ public class ServerPullrequest extends AbstractPullrequest {
     private String id;
     private String title;
     private boolean mergeConditionsSatisfied;
+    private List<AbstractPullrequest.Participant> participants;
 
     @JsonProperty("toRef")
     private Revision toRef;
@@ -67,6 +69,14 @@ public class ServerPullrequest extends AbstractPullrequest {
 
     public void setMergeConditionsSatisfied(boolean mergeConditionsSatisfied) {
         this.mergeConditionsSatisfied = mergeConditionsSatisfied;
+    }
+
+    public List<AbstractPullrequest.Participant> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<AbstractPullrequest.Participant> participants) {
+        this.participants = participants;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

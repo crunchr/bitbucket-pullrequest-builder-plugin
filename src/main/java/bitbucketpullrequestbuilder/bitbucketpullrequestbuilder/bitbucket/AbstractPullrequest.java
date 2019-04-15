@@ -33,7 +33,7 @@ public abstract class AbstractPullrequest {
         String getHash();
     }
 
-    public interface Author {
+    public interface User {
         String getUsername();
 
         String getDisplayName();
@@ -41,10 +41,14 @@ public abstract class AbstractPullrequest {
         String getCombinedUsername();
     }
 
+    public interface Author extends User {}
+
     public interface Participant {
         String getRole() ;
 
         Boolean getApproved();
+
+        AbstractPullrequest.User getUser();
     }
 
     public interface Comment extends Comparable<Comment> {
@@ -104,6 +108,8 @@ public abstract class AbstractPullrequest {
     public abstract String getState();
 
     public abstract String getId();
+
+    public abstract List<Participant> getParticipants();
 
     public abstract Author getAuthor();
 

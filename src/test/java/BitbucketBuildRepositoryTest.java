@@ -314,6 +314,14 @@ public class BitbucketBuildRepositoryTest {
     EasyMock.expect(trigger.getBranchesFilterBySCMIncludes()).andReturn(false);
     EasyMock.expect(trigger.getBranchesFilter()).andReturn("");
     EasyMock.expect(trigger.isCloud()).andReturn(true);
+    EasyMock.expect(trigger.getCheckTriggerConditions()).andReturn(true);
+    EasyMock.expect(trigger.getRequireAuthorApproval()).andReturn(true);
+    EasyMock.expect(trigger.getRequireUserApprovals()).andReturn(true);
+    EasyMock.expect(trigger.getRequireMinNumApprovals()).andReturn(true);
+    EasyMock.expect(trigger.getMinNumApprovals()).andReturn("2");
+    EasyMock.expect(trigger.getRequireAllParticipants()).andReturn(true);
+    EasyMock.expect(trigger.getAllParticipantsIgnoredUsers()).andReturn("");
+    EasyMock.expect(trigger.getRequiredUsers()).andReturn("");
     EasyMock.expect(trigger.getBitbucketServer()).andReturn(null);
     EasyMock.replay(trigger);
 
@@ -358,12 +366,20 @@ public class BitbucketBuildRepositoryTest {
     author.setDisplayName("DisplayName");
     author.setUsername("Username");
 
+    final CloudPullrequest.Participant participant = new CloudPullrequest.Participant();
+    participant.setRole("PARTICIPANT") ;
+    participant.setApproved(true) ;
+    participant.setUser(author);
+    final List<AbstractPullrequest.Participant> participants = new ArrayList<>();
+    participants.add(participant);
+
     pullRequest.setSource(sourceRevision);
     pullRequest.setDestination(destRevision);
     pullRequest.setId("Id");
     pullRequest.setTitle("Title");
     pullRequest.setState("OPEN");
     pullRequest.setAuthor(author);
+    pullRequest.setParticipants(participants);
 
     final List<CloudPullrequest> pullRequests = new ArrayList<>(Arrays.asList(pullRequest));
 

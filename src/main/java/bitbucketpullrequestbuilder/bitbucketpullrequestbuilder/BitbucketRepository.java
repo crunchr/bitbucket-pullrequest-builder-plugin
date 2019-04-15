@@ -2,11 +2,14 @@ package bitbucketpullrequestbuilder.bitbucketpullrequestbuilder;
 
 import static com.cloudbees.plugins.credentials.CredentialsMatchers.instanceOf;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -51,9 +54,11 @@ public class BitbucketRepository {
     private BitbucketPullRequestsBuilder builder;
     private BitbucketBuildTrigger trigger;
     private ApiClient client;
+    private List<String> approvedPullRequests;
 
     public BitbucketRepository(String projectPath, BitbucketPullRequestsBuilder builder) {
         this.builder = builder;
+        approvedPullRequests = new ArrayList<String>();
     }
 
     public void init() {
@@ -116,11 +121,22 @@ public class BitbucketRepository {
         logger.fine("Fetch PullRequests.");
         List<T> pullRequests = client.getPullRequests();
         List<T> targetPullRequests = new ArrayList<>();
+        List<String> activeApprovedPullRequests = new ArrayList<String>();
+
         for(T pullRequest : pullRequests) {
             if (isBuildTarget(pullRequest)) {
                 targetPullRequests.add(pullRequest);
             }
+
+            if(approvedPullRequests.contains(pullRequest.getId())) {
+                activeApprovedPullRequests.add(pullRequest.getId());
+            }
         }
+
+        logger.info("Approved pull request changed to: " + StringUtils.join(approvedPullRequests, ", "));
+
+        approvedPullRequests = activeApprovedPullRequests;
+
         return targetPullRequests;
     }
 
@@ -336,12 +352,162 @@ public class BitbucketRepository {
             }
             if (rebuildCommentAvailable) this.postBuildTagInTTPComment(id, "TTP build flag", buildKeyPart);
 
-            final boolean canBuildTarget = rebuildCommentAvailable || !commitAlreadyBeenProcessed;
+            boolean canBuildTarget = rebuildCommentAvailable || !commitAlreadyBeenProcessed;
+            canBuildTarget |= trigger.getCheckTriggerConditions() && triggerConditionsSatisfied(pullRequest);
             logger.log(Level.FINE, "Build target? {0} [rebuild:{1} processed:{2}]", new Object[]{ canBuildTarget, rebuildCommentAvailable, commitAlreadyBeenProcessed});
             return canBuildTarget;
         }
 
         return false;
+    }
+
+    private boolean triggerConditionsSatisfied(AbstractPullrequest pullRequest) {
+        boolean result = false;
+        List<String> logLines = new ArrayList<String>();
+        Map<String, Boolean> requiredConditions = new HashMap<String, Boolean>();
+
+        // Only check if pull requests has not been aproved yet
+        if(!approvedPullRequests.contains(pullRequest.getId())) {
+            requiredConditions.put("AuthorApproved", trigger.getRequireAuthorApproval());
+            requiredConditions.put("RequiredUsersApproved", trigger.getRequireUserApprovals());
+            requiredConditions.put("MinNumApprovals", trigger.getRequireMinNumApprovals());
+            requiredConditions.put("AllParticipantsApproved", trigger.getRequireAllParticipants());
+
+            // Check all conditions in the requiredConditions map
+            boolean success = false;
+            boolean conditions_success = true;
+            for (Map.Entry<String, Boolean> entry: requiredConditions.entrySet()) {
+                // Skip if not required
+                if (!entry.getValue()) {
+                    logger.fine("Skipped condition: " + entry.getKey());
+                    continue;
+                }
+
+                switch (entry.getKey()) {
+                case "AuthorApproved":
+                    success = hasAuthorApproved(pullRequest);
+                    logLines.add("author (" + pullRequest.getAuthor().getUsername() + ") has " + (success ? "" : "NOT ") + "approved");
+                    break;
+                case "RequiredUsersApproved":
+                    success = haveRequiredParticipantsApproved(pullRequest);
+                    logLines.add((success ? "" : "NOT ") + "all required participants have approved");
+                    break;
+                case "MinNumApprovals":
+                    success = hasEnoughApprovals(pullRequest);
+                    logLines.add((success ? "" : "NOT ") + "enough approvals");
+                    break;
+                case "AllParticipantsApproved":
+                    success = haveAllReviewersApproved(pullRequest);
+                    logLines.add((success ? "" : "NOT ") + "all participants have approved");
+                    break;
+                }
+
+                conditions_success &= success;
+                logger.fine("Checked condition: " + entry.getKey() + ", success: " + success + ", conditions succes: " + conditions_success);
+            }
+
+            // Do not trigger build if no conditions were checked
+            if(!requiredConditions.values().contains(true)) {
+              // Make sure build is not triggered again
+              approvedPullRequests.add(pullRequest.getId());
+
+              logger.info("Approved pull requests: " + StringUtils.join(approvedPullRequests, ", "));
+
+              return true;
+            } else {
+                result = !conditions_success;
+            }
+        }
+
+        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId());
+        logger.info("Trigger conditions info: " + StringUtils.join(logLines, ", "));
+        return result;
+    }
+
+    private boolean hasAuthorApproved(AbstractPullrequest pullRequest) {
+        final String authorUsername = pullRequest.getAuthor().getUsername();
+
+        // find author in list of participants
+        for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
+            if(participant.getUser().getUsername().equals(authorUsername)) {
+                return participant.getApproved();
+            }
+        }
+
+        logger.warning("Could not find author " + authorUsername + " in the list of pull request participants");
+        return false;
+    }
+
+    private boolean haveRequiredParticipantsApproved(AbstractPullrequest pullRequest) {
+        // Early exit if there are no required participants
+        if(trigger.getRequiredUsers().equals("")) { return true; }
+
+        String[] requiredParticipants = trigger.getRequiredUsers().split("[\\s]*,[\\s]*");
+
+        for(String requiredParticipant : requiredParticipants) {
+            boolean foundParticipant = false;
+
+            for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
+                if(participant.getUser().getUsername().equals(requiredParticipant)) {
+                    foundParticipant = true;
+
+                    if(!participant.getApproved()) {
+                        return false;
+                    }
+
+                    continue;
+                }
+            }
+
+            if(!foundParticipant) {
+                logger.warning("Did not find required pull request participant " + requiredParticipant);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean hasEnoughApprovals(AbstractPullrequest pullRequest) {
+        int numApprovals = 0;
+        int neededApprovals;
+
+        try {
+            neededApprovals = Integer.parseInt(trigger.getMinNumApprovals());
+        } catch(NumberFormatException e) {
+            logger.warning("Could not parse minimum number of required approvals: " + trigger.getMinNumApprovals());
+            return false;
+        }
+
+        for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
+            if(participant.getApproved()) {
+                numApprovals++;
+            }
+        }
+
+        logger.info("Number of approvals: " + numApprovals + " (needed: " + neededApprovals + ")");
+
+        return numApprovals >= neededApprovals;
+    }
+
+    private boolean haveAllReviewersApproved(AbstractPullrequest pullRequest) {
+        String ignoredUsersString = trigger.getAllParticipantsIgnoredUsers();
+
+        if(ignoredUsersString == null) {
+            ignoredUsersString = "";
+        }
+
+        List<String> ignoredParticipant = Arrays.asList(ignoredUsersString.split("[\\s]*,[\\s]*"));
+
+        for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
+            if(participant.getRole().equals("REVIEWER") &&
+               !ignoredParticipant.contains(participant.getUser().getUsername()) &&
+               !participant.getApproved()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean isSkipBuild(String pullRequestTitle) {

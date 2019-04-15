@@ -5,6 +5,8 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.List;
+
 /**
  * POJOs representing the pull-requests extracted from the
  * JSON response of the Bitbucket API V2.
@@ -29,6 +31,7 @@ public class CloudPullrequest extends AbstractPullrequest {
     private String     id;
     private Author     author;
     private boolean    mergeConditionsSatisfied;
+    private List<AbstractPullrequest.Participant> participants;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Revision implements AbstractPullrequest.Revision {
@@ -121,6 +124,7 @@ public class CloudPullrequest extends AbstractPullrequest {
     public static class Participant implements AbstractPullrequest.Participant {
         private String role;
         private Boolean approved;
+        private AbstractPullrequest.User user;
 
         public String getRole() {
             return role;
@@ -133,6 +137,12 @@ public class CloudPullrequest extends AbstractPullrequest {
         }
         public void setApproved(Boolean approved) {
             this.approved = approved;
+        }
+        public AbstractPullrequest.User getUser() {
+            return user;
+        }
+        public void setUser(AbstractPullrequest.User user) {
+            this.user = user;
         }
     }
 
@@ -372,5 +382,13 @@ public class CloudPullrequest extends AbstractPullrequest {
 
     public void setMergeConditionsSatisfied(boolean mergeConditionsSatisfied) {
         this.mergeConditionsSatisfied = mergeConditionsSatisfied;
+    }
+
+    public List<AbstractPullrequest.Participant> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<AbstractPullrequest.Participant> participants) {
+        this.participants = participants;
     }
 }
