@@ -400,6 +400,8 @@ public class BitbucketRepository {
                     success = haveAllReviewersApproved(pullRequest);
                     logLines.add((success ? "" : "NOT ") + "all participants have approved");
                     break;
+                default:
+                    logger.warning("Unknown approval condition");
                 }
 
                 conditions_success &= success;
