@@ -35,7 +35,7 @@ public class CloudApiClient extends ApiClient {
                 CloudPullrequest singlePullrequest = parse(output, CloudPullrequest.class);
                 detailedPullRequests.add(singlePullrequest);
             } catch(Exception e) {
-                logger.info("Exception single PR: " + e);
+                logger.log(Level.WARNING, "Invalid pull request response.", e);
             }
         }
 
