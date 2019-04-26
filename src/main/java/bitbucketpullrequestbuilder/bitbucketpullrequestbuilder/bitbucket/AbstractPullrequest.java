@@ -37,18 +37,22 @@ public abstract class AbstractPullrequest {
         String getUsername();
 
         String getDisplayName();
+    }
+
+    public interface Author {
+        String getUsername();
+
+        String getDisplayName();
 
         String getCombinedUsername();
     }
-
-    public interface Author extends User {}
 
     public interface Participant {
         String getRole() ;
 
         Boolean getApproved();
 
-        AbstractPullrequest.User getUser();
+        User getUser();
     }
 
     public interface Comment extends Comparable<Comment> {
@@ -109,7 +113,7 @@ public abstract class AbstractPullrequest {
 
     public abstract String getId();
 
-    public abstract List<Participant> getParticipants();
+    public abstract Participant[] getParticipants();
 
     public abstract Author getAuthor();
 

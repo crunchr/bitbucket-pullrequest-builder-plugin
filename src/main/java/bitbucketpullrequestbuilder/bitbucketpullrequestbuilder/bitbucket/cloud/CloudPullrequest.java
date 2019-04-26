@@ -31,7 +31,7 @@ public class CloudPullrequest extends AbstractPullrequest {
     private String     id;
     private Author     author;
     private boolean    mergeConditionsSatisfied;
-    private List<AbstractPullrequest.Participant> participants;
+    private Participant[] participants;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Revision implements AbstractPullrequest.Revision {
@@ -124,7 +124,7 @@ public class CloudPullrequest extends AbstractPullrequest {
     public static class Participant implements AbstractPullrequest.Participant {
         private String role;
         private Boolean approved;
-        private AbstractPullrequest.User user;
+        private User user;
 
         public String getRole() {
             return role;
@@ -138,10 +138,10 @@ public class CloudPullrequest extends AbstractPullrequest {
         public void setApproved(Boolean approved) {
             this.approved = approved;
         }
-        public AbstractPullrequest.User getUser() {
+        public User getUser() {
             return user;
         }
-        public void setUser(AbstractPullrequest.User user) {
+        public void setUser(User user) {
             this.user = user;
         }
     }
@@ -169,6 +169,29 @@ public class CloudPullrequest extends AbstractPullrequest {
         }
         public String getCombinedUsername() {
             return String.format(AUTHOR_COMBINED_NAME, this.getDisplayName(), this.getUsername());
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class User implements AbstractPullrequest.User {
+        private String username;
+        private String display_name;
+
+        public String getUsername() {
+            return username;
+        }
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        @JsonProperty("display_name")
+        public String getDisplayName() {
+            return display_name;
+        }
+
+        @JsonProperty("display_name")
+        public void setDisplayName(String display_name) {
+            this.display_name = display_name;
         }
     }
 
@@ -384,11 +407,11 @@ public class CloudPullrequest extends AbstractPullrequest {
         this.mergeConditionsSatisfied = mergeConditionsSatisfied;
     }
 
-    public List<AbstractPullrequest.Participant> getParticipants() {
-        return participants;
+    public Participant[] getParticipants() {
+        return participants.clone();
     }
 
-    public void setParticipants(List<AbstractPullrequest.Participant> participants) {
-        this.participants = participants;
+    public void setParticipants(Participant[] participants) {
+        this.participants = participants.clone();
     }
 }

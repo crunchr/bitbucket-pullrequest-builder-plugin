@@ -21,7 +21,7 @@ public class ServerPullrequest extends AbstractPullrequest {
     private String id;
     private String title;
     private boolean mergeConditionsSatisfied;
-    private List<AbstractPullrequest.Participant> participants;
+    private AbstractPullrequest.Participant[] participants;
 
     @JsonProperty("toRef")
     private Revision toRef;
@@ -71,12 +71,12 @@ public class ServerPullrequest extends AbstractPullrequest {
         this.mergeConditionsSatisfied = mergeConditionsSatisfied;
     }
 
-    public List<AbstractPullrequest.Participant> getParticipants() {
-        return participants;
+    public AbstractPullrequest.Participant[] getParticipants() {
+        return participants.clone();
     }
 
-    public void setParticipants(List<AbstractPullrequest.Participant> participants) {
-        this.participants = participants;
+    public void setParticipants(AbstractPullrequest.Participant[] participants) {
+        this.participants = participants.clone();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
