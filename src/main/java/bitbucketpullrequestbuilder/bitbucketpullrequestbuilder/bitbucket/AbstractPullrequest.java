@@ -118,4 +118,6 @@ public abstract class AbstractPullrequest {
     public abstract Author getAuthor();
 
     public abstract boolean getMergeConditionsSatisfied();
+
+    public abstract void setMergeConditionsSatisfied(boolean mergeConditionsSatisfied);
 }

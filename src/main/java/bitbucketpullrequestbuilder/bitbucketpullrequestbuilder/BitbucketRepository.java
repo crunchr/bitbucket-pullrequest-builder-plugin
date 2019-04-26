@@ -354,7 +354,12 @@ public class BitbucketRepository {
 
             boolean canBuildTarget = rebuildCommentAvailable || !commitAlreadyBeenProcessed;
             canBuildTarget |= trigger.getCheckTriggerConditions() && triggerConditionsSatisfied(pullRequest);
+
+            boolean mergeConditionsSatisfied = approvedPullRequests.contains(pullRequest.getId());
+            pullRequest.setMergeConditionsSatisfied(mergeConditionsSatisfied);
+
             logger.log(Level.FINE, "Build target? {0} [rebuild:{1} processed:{2}]", new Object[]{ canBuildTarget, rebuildCommentAvailable, commitAlreadyBeenProcessed});
+
             return canBuildTarget;
         }
 
@@ -362,68 +367,73 @@ public class BitbucketRepository {
     }
 
     private boolean triggerConditionsSatisfied(AbstractPullrequest pullRequest) {
-        boolean result = false;
         List<String> logLines = new ArrayList<String>();
         Map<String, Boolean> requiredConditions = new HashMap<String, Boolean>();
 
-        // Only check if pull requests has not been aproved yet
-        if(!approvedPullRequests.contains(pullRequest.getId())) {
-            requiredConditions.put("AuthorApproved", trigger.getRequireAuthorApproval());
-            requiredConditions.put("RequiredUsersApproved", trigger.getRequireUserApprovals());
-            requiredConditions.put("MinNumApprovals", trigger.getRequireMinNumApprovals());
-            requiredConditions.put("AllParticipantsApproved", trigger.getRequireAllParticipants());
+        requiredConditions.put("AuthorApproved", trigger.getRequireAuthorApproval());
+        requiredConditions.put("RequiredUsersApproved", trigger.getRequireUserApprovals());
+        requiredConditions.put("MinNumApprovals", trigger.getRequireMinNumApprovals());
+        requiredConditions.put("AllParticipantsApproved", trigger.getRequireAllParticipants());
 
-            // Check all conditions in the requiredConditions map
-            boolean success = false;
-            boolean conditions_success = true;
-            for (Map.Entry<String, Boolean> entry: requiredConditions.entrySet()) {
-                // Skip if not required
-                if (!entry.getValue()) {
-                    logger.fine("Skipped condition: " + entry.getKey());
-                    continue;
-                }
+        // Check all conditions in the requiredConditions map
+        boolean success = false;
+        boolean conditionSuccess = true;
 
-                switch (entry.getKey()) {
-                case "AuthorApproved":
-                    success = hasAuthorApproved(pullRequest);
-                    logLines.add("author (" + pullRequest.getAuthor().getUsername() + ") has " + (success ? "" : "NOT ") + "approved");
-                    break;
-                case "RequiredUsersApproved":
-                    success = haveRequiredParticipantsApproved(pullRequest);
-                    logLines.add((success ? "" : "NOT ") + "all required participants have approved");
-                    break;
-                case "MinNumApprovals":
-                    success = hasEnoughApprovals(pullRequest);
-                    logLines.add((success ? "" : "NOT ") + "enough approvals");
-                    break;
-                case "AllParticipantsApproved":
-                    success = haveAllReviewersApproved(pullRequest);
-                    logLines.add((success ? "" : "NOT ") + "all participants have approved");
-                    break;
-                default:
-                    logger.warning("Unknown approval condition");
-                }
-
-                conditions_success &= success;
-                logger.fine("Checked condition: " + entry.getKey() + ", success: " + success + ", conditions succes: " + conditions_success);
+        for (Map.Entry<String, Boolean> entry: requiredConditions.entrySet()) {
+            // Skip if not required
+            if (!entry.getValue()) {
+                logger.fine("Skipped condition: " + entry.getKey());
+                continue;
             }
 
-            // Do not trigger build if no conditions were checked
-            if(!requiredConditions.values().contains(true)) {
-              // Make sure build is not triggered again
-              approvedPullRequests.add(pullRequest.getId());
-
-              logger.info("Approved pull requests: " + StringUtils.join(approvedPullRequests, ", "));
-
-              return true;
-            } else {
-                result = !conditions_success;
+            switch (entry.getKey()) {
+            case "AuthorApproved":
+                success = hasAuthorApproved(pullRequest);
+                logLines.add("author (" + pullRequest.getAuthor().getUsername() + ") has " + (success ? "" : "NOT ") + "approved");
+                break;
+            case "RequiredUsersApproved":
+                success = haveRequiredParticipantsApproved(pullRequest);
+                logLines.add((success ? "" : "NOT ") + "all required participants have approved");
+                break;
+            case "MinNumApprovals":
+                success = hasEnoughApprovals(pullRequest);
+                logLines.add((success ? "" : "NOT ") + "enough approvals");
+                break;
+            case "AllParticipantsApproved":
+                success = haveAllReviewersApproved(pullRequest);
+                logLines.add((success ? "" : "NOT ") + "all participants have approved");
+                break;
+            default:
+                logger.warning("Unknown approval condition");
             }
+
+            conditionSuccess &= success;
+            logger.fine("Checked condition: " + entry.getKey() + ", success: " + success + ", conditions succes: " + conditionSuccess);
         }
 
-        logger.info("Trigger conditions were NOT satisfied for pull request " + pullRequest.getId());
-        logger.info("Trigger conditions info: " + StringUtils.join(logLines, ", "));
-        return result;
+        boolean shouldTrigger = false;
+
+        // Trigger if at least one condition check is enabled and all condition checks are
+        // satisfied
+        if(requiredConditions.values().contains(true)) {
+
+            // Only check if pull requests has not been aproved yet
+            if(!approvedPullRequests.contains(pullRequest.getId()) && conditionSuccess) {
+                // Make sure build is not triggered again
+                approvedPullRequests.add(pullRequest.getId());
+                shouldTrigger = true;
+            } else if(!conditionSuccess) {
+                // Make sure build is triggered again
+                approvedPullRequests.remove(pullRequest.getId());
+                shouldTrigger = false;
+            }
+
+            logger.info("Approved pull requests: " + StringUtils.join(approvedPullRequests, ", "));
+            logger.info("Were trigger conditions satisfied for pull request " + pullRequest.getId() + ": " + shouldTrigger);
+            logger.info("Trigger conditions info: " + StringUtils.join(logLines, ", "));
+        }
+
+        return shouldTrigger;
     }
 
     private boolean hasAuthorApproved(AbstractPullrequest pullRequest) {

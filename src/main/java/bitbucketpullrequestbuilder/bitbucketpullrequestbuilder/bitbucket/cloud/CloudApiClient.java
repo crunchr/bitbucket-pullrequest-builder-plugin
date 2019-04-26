@@ -26,7 +26,20 @@ public class CloudApiClient extends ApiClient {
 
     @Override
     public List<CloudPullrequest> getPullRequests() {
-        return getAllValues(v2("/pullrequests/"), 50, CloudPullrequest.class);
+        List<CloudPullrequest> pullRequests = getAllValues(v2("/pullrequests/"), 50, CloudPullrequest.class);
+        List<CloudPullrequest> detailedPullRequests = new ArrayList<CloudPullrequest>();
+
+        for(CloudPullrequest pullRequest : pullRequests) {
+            try {
+                String output = get(v2("/pullrequests/" + pullRequest.getId()));
+                CloudPullrequest singlePullrequest = parse(output, CloudPullrequest.class);
+                detailedPullRequests.add(singlePullrequest);
+            } catch(Exception e) {
+                logger.info("Exception single PR: " + e);
+            }
+        }
+
+        return detailedPullRequests;
     }
 
     @Override

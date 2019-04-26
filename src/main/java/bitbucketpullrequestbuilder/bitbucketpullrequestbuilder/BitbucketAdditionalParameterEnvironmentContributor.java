@@ -27,6 +27,7 @@ public class BitbucketAdditionalParameterEnvironmentContributor extends Environm
         putEnvVar(envVars, "destinationRepositoryName", cause.getDestinationRepositoryName());
         putEnvVar(envVars, "pullRequestTitle", cause.getPullRequestTitle());
         putEnvVar(envVars, "pullRequestAuthor", cause.getPullRequestAuthor());
+        putEnvVar(envVars, "mergeConditionsSatisfied", Boolean.toString(cause.getMergeConditionsSatisfied()));
 
     }
 
