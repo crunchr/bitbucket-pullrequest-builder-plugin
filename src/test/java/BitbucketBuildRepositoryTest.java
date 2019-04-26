@@ -366,12 +366,15 @@ public class BitbucketBuildRepositoryTest {
     author.setDisplayName("DisplayName");
     author.setUsername("Username");
 
+    final CloudPullrequest.User user = new CloudPullrequest.User();
+    user.setDisplayName("DisplayName");
+    user.setUsername("Username");
+
     final CloudPullrequest.Participant participant = new CloudPullrequest.Participant();
     participant.setRole("PARTICIPANT") ;
     participant.setApproved(true) ;
-    participant.setUser(author);
-    final List<AbstractPullrequest.Participant> participants = new ArrayList<>();
-    participants.add(participant);
+    participant.setUser(user);
+    final CloudPullrequest.Participant[] participants = { participant };
 
     pullRequest.setSource(sourceRevision);
     pullRequest.setDestination(destRevision);
@@ -381,10 +384,11 @@ public class BitbucketBuildRepositoryTest {
     pullRequest.setAuthor(author);
     pullRequest.setParticipants(participants);
 
-    final List<CloudPullrequest> pullRequests = new ArrayList<>(Arrays.asList(pullRequest));
+    final List<AbstractPullrequest> pullRequests = new ArrayList<AbstractPullrequest>();
+    pullRequests.add(pullRequest);
 
     // setup mock ApiClient
-    final CloudApiClient client = EasyMock.createNiceMock(CloudApiClient.class);
+    final ApiClient client = EasyMock.createNiceMock(CloudApiClient.class);
     EasyMock.expect(client.getPullRequests()).andReturn(pullRequests);
     EasyMock.replay(client);
 
