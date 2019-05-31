@@ -118,7 +118,7 @@ public class BitbucketRepository {
     }
 
     public <T extends AbstractPullrequest> List<T> getTargetPullRequests() {
-        logger.fine("Fetch PullRequests.");
+        logger.warning("Fetch PullRequests.");
         List<T> pullRequests = client.getPullRequests();
         List<T> targetPullRequests = new ArrayList<>();
         List<String> activeApprovedPullRequests = new ArrayList<String>();
@@ -133,7 +133,7 @@ public class BitbucketRepository {
             }
         }
 
-        logger.info("Approved pull request changed to: " + StringUtils.join(approvedPullRequests, ", "));
+        logger.warning("Approved pull request changed to: " + StringUtils.join(approvedPullRequests, ", "));
 
         approvedPullRequests = activeApprovedPullRequests;
 
@@ -163,7 +163,7 @@ public class BitbucketRepository {
         // * see: https://github.com/nishio-dens/bitbucket-pullrequest-builder-plugin/issues/98
         final String destinationCommitHash;
         if (pullRequest.getDestination().getCommit() == null) {
-            logger.log(Level.INFO, "Pull request #{0} ''{1}'' in repo ''{2}'' has a null value for destination commit.",
+            logger.log(Level.WARNING, "Pull request #{0} ''{1}'' in repo ''{2}'' has a null value for destination commit.",
                     new Object[]{pullRequest.getId(), pullRequest.getTitle(), pullRequest.getDestination().getRepository().getRepositoryName()});
             destinationCommitHash = null;
         } else {
@@ -222,7 +222,7 @@ public class BitbucketRepository {
         String repository = cause.getRepositoryName();
         String destinationBranch = cause.getTargetBranch();
 
-        logger.fine("setBuildStatus " + state + " for commit: " + sourceCommit + " with url " + buildUrl);
+        logger.warning("setBuildStatus " + state + " for commit: " + sourceCommit + " with url " + buildUrl);
 
         if (state == BuildState.FAILED || state == BuildState.SUCCESSFUL) {
             comment = String.format(BUILD_DESCRIPTION, builder.getJob().getDisplayName(), sourceCommit, destinationBranch);
@@ -248,7 +248,7 @@ public class BitbucketRepository {
     final static String CONTENT_PART_TEMPLATE = "```[bid: %s]```";
 
     private List<String> getAvailableBuildTagsFromTTPComment(String buildTags) {
-      logger.log(Level.FINE, "Parse {0}", new Object[]{ buildTags });
+      logger.log(Level.WARNING, "Parse {0}", new Object[]{ buildTags });
       List<String> availableBuildTags = new LinkedList<String>();
       Matcher subBuildTagMatcher = SINGLE_BUILD_TAG_RX.matcher(buildTags);
       while(subBuildTagMatcher.find()) availableBuildTags.add(subBuildTagMatcher.group(0).trim());
@@ -258,18 +258,18 @@ public class BitbucketRepository {
     public boolean hasMyBuildTagInTTPComment(String content, String buildKey) {
       Matcher tagsMatcher = BUILD_TAGS_RX.matcher(content);
       if (tagsMatcher.find()) {
-        logger.log(Level.FINE, "Content {0} g[1]:{1} mykey:{2}", new Object[] { content, tagsMatcher.group(1).trim(), this.getMyBuildTag(buildKey) });
+        logger.log(Level.WARNING, "Content {0} g[1]:{1} mykey:{2}", new Object[] { content, tagsMatcher.group(1).trim(), this.getMyBuildTag(buildKey) });
         return this.getAvailableBuildTagsFromTTPComment(tagsMatcher.group(1).trim()).contains(this.getMyBuildTag(buildKey));
       }
       else return false;
     }
 
     private void postBuildTagInTTPComment(String pullRequestId, String content, String buildKey) {
-      logger.log(Level.FINE, "Update build tag for {0} build key", buildKey);
+      logger.log(Level.WARNING, "Update build tag for {0} build key", buildKey);
       List<String> builds = this.getAvailableBuildTagsFromTTPComment(content);
       builds.add(this.getMyBuildTag(buildKey));
       content += " " + String.format(CONTENT_PART_TEMPLATE, StringUtils.join(builds, " "));
-      logger.log(Level.FINE, "Post comment: {0} with original content {1}", new Object[]{ content, this.client.postPullRequestComment(pullRequestId, content).getId() });
+      logger.log(Level.WARNING, "Post comment: {0} with original content {1}", new Object[]{ content, this.client.postPullRequestComment(pullRequestId, content).getId() });
     }
 
     private boolean isTTPComment(String content) {
@@ -286,17 +286,17 @@ public class BitbucketRepository {
     }
 
     public List<AbstractPullrequest.Comment> filterPullRequestComments(List<AbstractPullrequest.Comment> comments) {
-      logger.fine("Filter PullRequest Comments.");
+      logger.warning("Filter PullRequest Comments.");
       Collections.sort(comments);
       Collections.reverse(comments);
       List<AbstractPullrequest.Comment> filteredComments = new LinkedList<AbstractPullrequest.Comment>();
       for(AbstractPullrequest.Comment comment : comments) {
         String content = comment.getContent();
-        logger.log(Level.FINE, "Found comment: id:" + comment.getId() +" <" + comment.getContent() + ">");
+        logger.log(Level.WARNING, "Found comment: id:" + comment.getId() +" <" + comment.getContent() + ">");
         if (content == null || content.isEmpty()) continue;
         boolean isTTP = this.isTTPComment(content);
         boolean isTTPBuild = this.isTTPCommentBuildTags(content);
-        logger.log(Level.FINE, "isTTP: " + isTTP + " isTTPBuild: " + isTTPBuild);
+        logger.log(Level.WARNING, "isTTP: " + isTTP + " isTTPBuild: " + isTTPBuild);
         if (isTTP || isTTPBuild)  filteredComments.add(comment);
         if (isTTP) break;
       }
@@ -306,7 +306,7 @@ public class BitbucketRepository {
     private boolean isBuildTarget(AbstractPullrequest pullRequest) {
         if (pullRequest.getState() != null && pullRequest.getState().equals("OPEN")) {
             if (isSkipBuild(pullRequest.getTitle()) || !isFilteredBuild(pullRequest)) {
-                logger.log(Level.FINE, "Skipping build for " + pullRequest.getTitle() + 
+                logger.log(Level.WARNING, "Skipping build for " + pullRequest.getTitle() +
                         ": skip:" + isSkipBuild(pullRequest.getTitle()) + " : isFilteredBuild: " + 
                         isFilteredBuild(pullRequest));
                 return false;
@@ -324,7 +324,7 @@ public class BitbucketRepository {
             final boolean commitAlreadyBeenProcessed = this.client.hasBuildStatus(
               sourceRepository.getOwnerName(), sourceRepository.getRepositoryName(), sourceCommit, buildKeyPart
             );
-            if (commitAlreadyBeenProcessed) logger.log(Level.FINE,
+            if (commitAlreadyBeenProcessed) logger.log(Level.WARNING,
               "Commit {0}#{1} has already been processed",
               new Object[]{ sourceCommit, buildKeyPart }
             );
@@ -340,7 +340,7 @@ public class BitbucketRepository {
                     String content = comment.getContent();
                     if (this.isTTPComment(content)) {
                         rebuildCommentAvailable = true;
-                        logger.log(Level.FINE,
+                        logger.log(Level.WARNING,
                           "Rebuild comment available for commit {0} and comment #{1}",
                           new Object[]{ sourceCommit, comment.getId() }
                         );
@@ -358,7 +358,7 @@ public class BitbucketRepository {
             boolean mergeConditionsSatisfied = approvedPullRequests.contains(pullRequest.getId());
             pullRequest.setMergeConditionsSatisfied(mergeConditionsSatisfied);
 
-            logger.log(Level.FINE, "Build target? {0} [rebuild:{1} processed:{2}]", new Object[]{ canBuildTarget, rebuildCommentAvailable, commitAlreadyBeenProcessed});
+            logger.log(Level.WARNING, "Build target? {0} [rebuild:{1} processed:{2}]", new Object[]{ canBuildTarget, rebuildCommentAvailable, commitAlreadyBeenProcessed});
 
             return canBuildTarget;
         }
@@ -382,7 +382,7 @@ public class BitbucketRepository {
         for (Map.Entry<String, Boolean> entry: requiredConditions.entrySet()) {
             // Skip if not required
             if (!entry.getValue()) {
-                logger.fine("Skipped condition: " + entry.getKey());
+                logger.warning("Skipped condition: " + entry.getKey());
                 continue;
             }
 
@@ -408,7 +408,7 @@ public class BitbucketRepository {
             }
 
             conditionSuccess &= success;
-            logger.fine("Checked condition: " + entry.getKey() + ", success: " + success + ", conditions succes: " + conditionSuccess);
+            logger.warning("Checked condition: " + entry.getKey() + ", success: " + success + ", conditions succes: " + conditionSuccess);
         }
 
         boolean shouldTrigger = false;
@@ -428,9 +428,9 @@ public class BitbucketRepository {
                 shouldTrigger = false;
             }
 
-            logger.info("Approved pull requests: " + StringUtils.join(approvedPullRequests, ", "));
-            logger.info("Were trigger conditions satisfied for pull request " + pullRequest.getId() + ": " + shouldTrigger);
-            logger.info("Trigger conditions info: " + StringUtils.join(logLines, ", "));
+            logger.warning("Approved pull requests: " + StringUtils.join(approvedPullRequests, ", "));
+            logger.warning("Were trigger conditions satisfied for pull request " + pullRequest.getId() + ": " + shouldTrigger);
+            logger.warning("Trigger conditions info: " + StringUtils.join(logLines, ", "));
         }
 
         return shouldTrigger;
@@ -497,7 +497,7 @@ public class BitbucketRepository {
             }
         }
 
-        logger.info("Number of approvals: " + numApprovals + " (needed: " + neededApprovals + ")");
+        logger.warning("Number of approvals: " + numApprovals + " (needed: " + neededApprovals + ")");
 
         return numApprovals >= neededApprovals;
     }
