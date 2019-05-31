@@ -333,11 +333,17 @@ public class BitbucketRepository {
             List<AbstractPullrequest.Comment> comments = client.getPullRequestComments(owner, repositoryName, id);
 
             boolean rebuildCommentAvailable = false;
+
+            logger.warning("level 1");
+
             if (comments != null) {
+                logger.warning("level 2");
                 Collection<AbstractPullrequest.Comment> filteredComments = this.filterPullRequestComments(comments);
                 boolean hasMyBuildTag = false;
                 for (AbstractPullrequest.Comment comment : filteredComments) {
+
                     String content = comment.getContent();
+                    logger.warning("level 3: " + content);
                     if (this.isTTPComment(content)) {
                         rebuildCommentAvailable = true;
                         logger.log(Level.WARNING,
@@ -345,15 +351,27 @@ public class BitbucketRepository {
                           new Object[]{ sourceCommit, comment.getId() }
                         );
                     }
-                    if (isTTPCommentBuildTags(content))
+                    if (isTTPCommentBuildTags(content)) {
                         hasMyBuildTag |= this.hasMyBuildTagInTTPComment(content, buildKeyPart);
+
+                        logger.warning("level 4");
+                    }
+                    logger.warning("end level 3: " + content);
                 }
                 rebuildCommentAvailable &= !hasMyBuildTag;
             }
-            if (rebuildCommentAvailable) this.postBuildTagInTTPComment(id, "TTP build flag", buildKeyPart);
+            if (rebuildCommentAvailable) {
+
+              logger.warning("if rebuildCommentAvailable");
+              this.postBuildTagInTTPComment(id, "TTP build flag", buildKeyPart);
+            }
+
+            logger.warning("beyond rebuildCommentAvailable");
 
             boolean canBuildTarget = rebuildCommentAvailable || !commitAlreadyBeenProcessed;
             canBuildTarget |= trigger.getCheckTriggerConditions() && triggerConditionsSatisfied(pullRequest);
+
+            logger.warning("were here");
 
             boolean mergeConditionsSatisfied = approvedPullRequests.contains(pullRequest.getId());
             pullRequest.setMergeConditionsSatisfied(mergeConditionsSatisfied);
@@ -413,16 +431,22 @@ public class BitbucketRepository {
 
         boolean shouldTrigger = false;
 
+        logger.warning("required conditions");
+
         // Trigger if at least one condition check is enabled and all condition checks are
         // satisfied
         if(requiredConditions.values().contains(true)) {
 
+            logger.warning("inside at least one condition succeeded");
+
             // Only check if pull requests has not been aproved yet
             if(!approvedPullRequests.contains(pullRequest.getId()) && conditionSuccess) {
+            logger.warning("if");
                 // Make sure build is not triggered again
                 approvedPullRequests.add(pullRequest.getId());
                 shouldTrigger = true;
             } else if(!conditionSuccess) {
+            logger.warning("elif");
                 // Make sure build is triggered again
                 approvedPullRequests.remove(pullRequest.getId());
                 shouldTrigger = false;
@@ -432,7 +456,7 @@ public class BitbucketRepository {
             logger.warning("Were trigger conditions satisfied for pull request " + pullRequest.getId() + ": " + shouldTrigger);
             logger.warning("Trigger conditions info: " + StringUtils.join(logLines, ", "));
         }
-
+        logger.warning("beyond at least one condition succeeded");
         return shouldTrigger;
     }
 
