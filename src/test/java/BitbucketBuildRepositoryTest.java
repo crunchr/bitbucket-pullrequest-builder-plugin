@@ -364,11 +364,9 @@ public class BitbucketBuildRepositoryTest {
 
     final CloudPullrequest.Author author = new CloudPullrequest.Author();
     author.setDisplayName("DisplayName");
-    author.setUsername("Username");
 
     final CloudPullrequest.User user = new CloudPullrequest.User();
     user.setDisplayName("DisplayName");
-    user.setUsername("Username");
 
     final CloudPullrequest.Participant participant = new CloudPullrequest.Participant();
     participant.setRole("PARTICIPANT") ;

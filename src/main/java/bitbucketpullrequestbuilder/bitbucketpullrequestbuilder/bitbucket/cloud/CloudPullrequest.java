@@ -148,15 +148,7 @@ public class CloudPullrequest extends AbstractPullrequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Author implements AbstractPullrequest.Author {
-        private String username;
         private String display_name;
-
-        public String getUsername() {
-            return username;
-        }
-        public void setUsername(String username) {
-            this.username = username;
-        }
 
         @JsonProperty("display_name")
         public String getDisplayName() {
@@ -168,21 +160,13 @@ public class CloudPullrequest extends AbstractPullrequest {
             this.display_name = display_name;
         }
         public String getCombinedUsername() {
-            return String.format(AUTHOR_COMBINED_NAME, this.getDisplayName(), this.getUsername());
+            return this.getDisplayName();
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class User implements AbstractPullrequest.User {
-        private String username;
         private String display_name;
-
-        public String getUsername() {
-            return username;
-        }
-        public void setUsername(String username) {
-            this.username = username;
-        }
 
         @JsonProperty("display_name")
         public String getDisplayName() {

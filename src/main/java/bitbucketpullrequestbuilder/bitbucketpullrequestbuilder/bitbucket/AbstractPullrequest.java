@@ -7,8 +7,6 @@ import java.util.List;
 
 public abstract class AbstractPullrequest {
 
-    protected static final String AUTHOR_COMBINED_NAME = "%s <@%s>";
-
     public interface Revision {
         Repository getRepository();
 
@@ -34,14 +32,10 @@ public abstract class AbstractPullrequest {
     }
 
     public interface User {
-        String getUsername();
-
         String getDisplayName();
     }
 
     public interface Author {
-        String getUsername();
-
         String getDisplayName();
 
         String getCombinedUsername();

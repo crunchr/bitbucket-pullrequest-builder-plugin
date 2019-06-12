@@ -33,9 +33,14 @@ public class BitbucketPullRequestsBuilder {
     }
 
     public void run() {
-        this.repository.init();
-        Collection<AbstractPullrequest> targetPullRequests = this.repository.getTargetPullRequests();
-        this.repository.addFutureBuildTasks(targetPullRequests);
+        try {
+            this.repository.init();
+            Collection<AbstractPullrequest> targetPullRequests = this.repository.getTargetPullRequests();
+            this.repository.addFutureBuildTasks(targetPullRequests);
+        } catch(Exception e) {
+            logger.log(Level.WARNING, "Exception raised in BitbucketPullrequestsBuilder.run", e);
+            throw e;
+        }
     }
 
     public BitbucketPullRequestsBuilder setupBuilder() {

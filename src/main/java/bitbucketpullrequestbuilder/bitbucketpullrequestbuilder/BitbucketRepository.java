@@ -389,7 +389,7 @@ public class BitbucketRepository {
             switch (entry.getKey()) {
             case "AuthorApproved":
                 success = hasAuthorApproved(pullRequest);
-                logLines.add("author (" + pullRequest.getAuthor().getUsername() + ") has " + (success ? "" : "NOT ") + "approved");
+                logLines.add("author (" + pullRequest.getAuthor().getDisplayName() + ") has " + (success ? "" : "NOT ") + "approved");
                 break;
             case "RequiredUsersApproved":
                 success = haveRequiredParticipantsApproved(pullRequest);
@@ -437,16 +437,16 @@ public class BitbucketRepository {
     }
 
     private boolean hasAuthorApproved(AbstractPullrequest pullRequest) {
-        final String authorUsername = pullRequest.getAuthor().getUsername();
+        final String authorDisplayName = pullRequest.getAuthor().getDisplayName();
 
         // find author in list of participants
         for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
-            if(participant.getUser().getUsername().equals(authorUsername)) {
+            if(participant.getUser().getDisplayName().equals(authorDisplayName)) {
                 return participant.getApproved();
             }
         }
 
-        logger.warning("Could not find author " + authorUsername + " in the list of pull request participants");
+        logger.warning("Could not find author " + authorDisplayName + " in the list of pull request participants");
         return false;
     }
 
@@ -460,7 +460,7 @@ public class BitbucketRepository {
             boolean foundParticipant = false;
 
             for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
-                if(participant.getUser().getUsername().equals(requiredParticipant)) {
+                if(participant.getUser().getDisplayName().equals(requiredParticipant)) {
                     foundParticipant = true;
 
                     if(!participant.getApproved()) {
@@ -513,7 +513,7 @@ public class BitbucketRepository {
 
         for(AbstractPullrequest.Participant participant : pullRequest.getParticipants()) {
             if(participant.getRole().equals("REVIEWER") &&
-               !ignoredParticipant.contains(participant.getUser().getUsername()) &&
+               !ignoredParticipant.contains(participant.getUser().getDisplayName()) &&
                !participant.getApproved()) {
                 return false;
             }

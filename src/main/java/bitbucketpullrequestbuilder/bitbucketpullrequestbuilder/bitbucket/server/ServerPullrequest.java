@@ -176,19 +176,11 @@ public class ServerPullrequest extends AbstractPullrequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Author implements AbstractPullrequest.Author{
-
-        private String username;
         private String displayName;
 
         @JsonProperty("user")
         private void unpackUser(Map<String, Object> user) {
-            this.username = user.get("name").toString();
             this.displayName = user.get("displayName").toString();
-        }
-
-        @Override
-        public String getUsername() {
-            return username;
         }
 
         @Override
@@ -198,7 +190,7 @@ public class ServerPullrequest extends AbstractPullrequest {
 
         @Override
         public String getCombinedUsername() {
-            return String.format(AUTHOR_COMBINED_NAME, this.getDisplayName(), this.getUsername());
+            return this.getDisplayName();
         }
     }
 
